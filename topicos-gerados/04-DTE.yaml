@@ -1,0 +1,155 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: Question
+      id: question_dte
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaDTE
+      prompt: O consulente aderiu previamente ao Domicílio Tributário Eletrônico (DTE) no e-CAC?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: dte_ativo
+              displayName: Sim, tenho DTE ativo
+
+            - id: dte_sn
+              displayName: Sou PJ do Simples Nacional com DTE-SN aceito
+
+            - id: sem_dte
+              displayName: Não aderi ao DTE
+
+            - id: nao_sei
+              displayName: Não sei como verificar
+
+    - kind: ConditionGroup
+      id: conditionGroup_dte
+      conditions:
+        - id: cond_dteAtivo
+          condition: =Topic.respostaDTE = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.04-DTE.main.question_dte'.'dte_ativo'
+          actions:
+            - kind: SetVariable
+              id: setVariable_dteAtivo
+              variable: Global.DTEAtivo
+              value: =true
+
+        - id: cond_dteSN
+          condition: =Topic.respostaDTE = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.04-DTE.main.question_dte'.'dte_sn'
+          actions:
+            - kind: SetVariable
+              id: setVariable_dteSN
+              variable: Global.DTEAtivo
+              value: =true
+
+        - id: cond_dteAusente
+          condition: =Topic.respostaDTE = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.04-DTE.main.question_dte'.'sem_dte'
+          actions:
+            - kind: SetVariable
+              id: setVariable_motivoDteAusente
+              variable: Global.MotivoBloqueio
+              value: ="dte_ausente"
+
+            - kind: SetVariable
+              id: setVariable_statusDteAusente
+              variable: Global.StatusFluxo
+              value: ="bloqueado_sanavel"
+
+            - kind: SendActivity
+              id: debug_dteAusente
+              activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+            - kind: SendActivity
+              id: placeholder_sanDte
+              activity: "[PLACEHOLDER] Aqui entrará o SAN - DTE Ausente (dte_ausente)"
+
+        - id: cond_dteNaoSei
+          condition: =Topic.respostaDTE = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.04-DTE.main.question_dte'.'nao_sei'
+          actions:
+            - kind: SendActivity
+              id: msg_orientacaoDte
+              activity: |-
+                Para verificar ou aderir ao DTE:
+
+                1. Acesse o e-CAC em gov.br/receitafederal
+                2. Faca login com sua conta gov.br (nivel Prata ou Ouro) ou e-CNPJ
+                3. Menu "Servicos em Destaque" - "Opcao pelo Domicilio Tributario Eletronico"
+                4. O sistema mostra se voce ja aderiu, com a data da adesao
+                5. Caso contrario, voce pode aderir imediatamente
+
+                Observacao importante:
+                - PF: DTE obrigatorio desde 15/03/2023
+                - PJ: DTE obrigatorio sempre
+                - PJ Simples Nacional: o DTE-SN atende a exigencia
+
+            - kind: Question
+              id: question_dteRecheck
+              interruptionPolicy:
+                allowInterruption: true
+
+              variable: init:Topic.respostaDTERecheck
+              prompt: Apos verificar, voce tem DTE ativo?
+              entity:
+                kind: EmbeddedEntity
+                definition:
+                  kind: ClosedListEntity
+                  items:
+                    - id: recheck_sim
+                      displayName: Sim, DTE ativo (ou DTE-SN aceito)
+
+                    - id: recheck_nao
+                      displayName: Nao aderi ao DTE
+
+            - kind: ConditionGroup
+              id: conditionGroup_dteRecheck
+              conditions:
+                - id: cond_recheckAtivo
+                  condition: =Topic.respostaDTERecheck = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.04-DTE.main.question_dteRecheck'.'recheck_sim'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_recheckAtivo
+                      variable: Global.DTEAtivo
+                      value: =true
+
+                - id: cond_recheckAusente
+                  condition: =Topic.respostaDTERecheck = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.04-DTE.main.question_dteRecheck'.'recheck_nao'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_motivoRecheckAusente
+                      variable: Global.MotivoBloqueio
+                      value: ="dte_ausente"
+
+                    - kind: SetVariable
+                      id: setVariable_statusRecheckAusente
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_sanavel"
+
+                    - kind: SendActivity
+                      id: debug_recheckAusente
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: SendActivity
+                      id: placeholder_sanDteRecheck
+                      activity: "[PLACEHOLDER] Aqui entrará o SAN - DTE Ausente (dte_ausente)"
+
+    - kind: ConditionGroup
+      id: conditionGroup_continuar04
+      conditions:
+        - id: cond_fluxoAtivo04
+          condition: =Global.StatusFluxo = "iniciado"
+          actions:
+            - kind: SendActivity
+              id: debug_final04
+              activity: "[DEBUG] DTEAtivo:{Global.DTEAtivo} | StatusFluxo:{Global.StatusFluxo}"
+
+            - kind: SendActivity
+              id: placeholder_topico05
+              activity: "[PLACEHOLDER] Aqui entrará o redirecionamento para 05 - Matriz ou Filial"
+
+inputType: {}
+outputType: {}

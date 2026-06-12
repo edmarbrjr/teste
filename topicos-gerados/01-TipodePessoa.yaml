@@ -1,0 +1,139 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: ConditionGroup
+      id: conditionGroup_a1Uejo
+      conditions:
+        - id: conditionItem_y9xJcX
+          condition: =Global.TipoConsulta = "nbs"
+          actions:
+            - kind: Question
+              id: question_nq0wsi
+              interruptionPolicy:
+                allowInterruption: true
+
+              variable: init:Topic.respostaPJNBS
+              prompt: A consulta sobre classificação NBS só pode ser formulada por pessoa jurídica que seja sujeito passivo. Você confirma que representa uma pessoa jurídica?
+              entity:
+                kind: EmbeddedEntity
+                definition:
+                  kind: ClosedListEntity
+                  items:
+                    - id: Sim, sou pessoa jurídica
+                      displayName: Sim, sou pessoa jurídica
+
+                    - id: Não, sou pessoa física
+                      displayName: Não, sou pessoa física
+
+            - kind: ConditionGroup
+              id: conditionGroup_xjLQgQ
+              conditions:
+                - id: conditionItem_ee0HP4
+                  condition: =Topic.respostaPJNBS = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.01-TipodePessoa.main.question_nq0wsi'.'Sim, sou pessoa jurídica'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_pjNbs
+                      variable: Global.TipoPessoa
+                      value: ="pj"
+
+                - id: conditionItem_iG67ar
+                  condition: =Topic.respostaPJNBS = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.01-TipodePessoa.main.question_nq0wsi'.'Não, sou pessoa física'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_motivoPfNbs
+                      variable: Global.MotivoBloqueio
+                      value: ="pf_nbs"
+
+                    - kind: SetVariable
+                      id: setVariable_statusPfNbs
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_insanavel"
+
+                    - kind: SendActivity
+                      id: debug_bloqPfNbs
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: SendActivity
+                      id: sendActivity_J9qujL
+                      activity: "[PLACEHOLDER] Aqui entrará o BLOQ - Legitimidade Material (pf_nbs)"
+
+      elseActions:
+        - kind: Question
+          id: question_GGid0s
+          interruptionPolicy:
+            allowInterruption: true
+
+          variable: Topic.respostaTipoPessoa
+          prompt: Quem é o consulente, ou seja, quem formulará a consulta?
+          entity:
+            kind: EmbeddedEntity
+            sensitivityLevel: None
+            definition:
+              kind: ClosedListEntity
+              items:
+                - id: "Pessoa Física "
+                  displayName: "Pessoa Física "
+
+                - id: "Pessoa Jurídica "
+                  displayName: "Pessoa Jurídica "
+
+                - id: Órgão da administração pública
+                  displayName: Órgão da administração pública
+
+                - id: Entidade representativa de categoria
+                  displayName: Entidade representativa de categoria
+
+        - kind: ConditionGroup
+          id: conditionGroup_Dy7AIn
+          conditions:
+            - id: conditionItem_9OXnko
+              condition: =Topic.respostaTipoPessoa = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.01-TipodePessoa.main.question_GGid0s'.'Pessoa Física '
+              actions:
+                - kind: SetVariable
+                  id: setVariable_WEZUZw
+                  variable: Global.TipoPessoa
+                  value: ="pf"
+
+            - id: conditionItem_ww7OUp
+              condition: =Topic.respostaTipoPessoa = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.01-TipodePessoa.main.question_GGid0s'.'Pessoa Jurídica '
+              actions:
+                - kind: SetVariable
+                  id: setVariable_E74QNg
+                  variable: Global.TipoPessoa
+                  value: ="pj"
+
+            - id: conditionItem_wc6aYw
+              condition: =Topic.respostaTipoPessoa = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.01-TipodePessoa.main.question_GGid0s'.'Órgão da administração pública'
+              actions:
+                - kind: SetVariable
+                  id: setVariable_2TyYfa
+                  variable: Global.TipoPessoa
+                  value: ="orgao"
+
+            - id: conditionItem_rWp7XO
+              condition: =Topic.respostaTipoPessoa = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.01-TipodePessoa.main.question_GGid0s'.'Entidade representativa de categoria'
+              actions:
+                - kind: SetVariable
+                  id: setVariable_DFMCdG
+                  variable: Global.TipoPessoa
+                  value: ="entidade"
+
+    - kind: ConditionGroup
+      id: conditionGroup_continuar01
+      conditions:
+        - id: cond_fluxoAtivo01
+          condition: =Global.StatusFluxo = "iniciado"
+          actions:
+            - kind: SendActivity
+              id: sendActivity_jyFCaL
+              activity: "[DEBUG] TipoPessoa:{Global.TipoPessoa}"
+
+            - kind: BeginDialog
+              id: KN0kY6
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial
+
+inputType: {}
+outputType: {}

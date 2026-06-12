@@ -1,0 +1,193 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: ConditionGroup
+      id: conditionGroup_tipoPessoa02
+      conditions:
+        - id: cond_pfpj
+          condition: =Global.TipoPessoa = "pf" || Global.TipoPessoa = "pj"
+          actions:
+            - kind: Question
+              id: question_spPfPj
+              interruptionPolicy:
+                allowInterruption: true
+
+              variable: init:Topic.respostaSujeitoPassivo
+              prompt: |-
+                Você é sujeito passivo de obrigação tributária (principal ou acessória) relacionada ao fato objeto da consulta?
+
+                (Sujeito passivo é quem tem o dever de pagar o tributo — contribuinte — ou de cumprir obrigações como reter, declarar ou informar — responsável.)
+              entity:
+                kind: EmbeddedEntity
+                definition:
+                  kind: ClosedListEntity
+                  items:
+                    - id: Sim, sou o sujeito passivo
+                      displayName: Sim, sou o sujeito passivo
+
+                    - id: Não sou o contribuinte — estou consultando como terceiro
+                      displayName: Não sou o contribuinte — estou consultando como terceiro
+
+            - kind: ConditionGroup
+              id: conditionGroup_spPfPj
+              conditions:
+                - id: cond_spPfPjSim
+                  condition: =Topic.respostaSujeitoPassivo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spPfPj'.'Sim, sou o sujeito passivo'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_spPfPjTrue
+                      variable: Global.SujeitoPassivo
+                      value: =true
+
+                - id: cond_spPfPjNao
+                  condition: =Topic.respostaSujeitoPassivo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spPfPj'.'Não sou o contribuinte — estou consultando como terceiro'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_motivoNaoSP
+                      variable: Global.MotivoBloqueio
+                      value: ="nao_sujeito_passivo"
+
+                    - kind: SetVariable
+                      id: setVariable_statusNaoSP
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_insanavel"
+
+                    - kind: SendActivity
+                      id: debug_bloqNaoSP
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: SendActivity
+                      id: placeholder_bloqNaoSP
+                      activity: "[PLACEHOLDER] Aqui entrará o BLOQ - Legitimidade Material (nao_sujeito_passivo)"
+
+        - id: cond_orgao
+          condition: =Global.TipoPessoa = "orgao"
+          actions:
+            - kind: Question
+              id: question_spOrgao
+              interruptionPolicy:
+                allowInterruption: true
+
+              variable: init:Topic.respostaOrgao
+              prompt: O órgão público é sujeito passivo da obrigação tributária em questão (por exemplo, como responsável por retenção na fonte), ou a consulta versa sobre situação em que ele não figura como sujeito passivo?
+              entity:
+                kind: EmbeddedEntity
+                definition:
+                  kind: ClosedListEntity
+                  items:
+                    - id: Sim, o órgão é sujeito passivo
+                      displayName: Sim, o órgão é sujeito passivo
+
+                    - id: Não — o órgão não figura como sujeito passivo
+                      displayName: Não — o órgão não figura como sujeito passivo
+
+            - kind: ConditionGroup
+              id: conditionGroup_spOrgao
+              conditions:
+                - id: cond_orgaoSim
+                  condition: =Topic.respostaOrgao = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spOrgao'.'Sim, o órgão é sujeito passivo'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_orgaoSim
+                      variable: Global.SujeitoPassivo
+                      value: =true
+
+                - id: cond_orgaoNaoSP
+                  condition: =Topic.respostaOrgao = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spOrgao'.'Não — o órgão não figura como sujeito passivo'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_orgaoNaoSP
+                      variable: Global.SujeitoPassivo
+                      value: =true
+
+                    - kind: SendActivity
+                      id: aviso_orgaoNaoSP
+                      activity: "⚠️ Atenção: a consulta pode prosseguir, mas, por versar sobre situação em que o órgão não figura como sujeito passivo, os efeitos previstos no art. 18 da IN RFB 2.058/2021 não alcançarão o sujeito passivo da obrigação tributária (art. 23), e a solução terá caráter meramente informativo (art. 27, § 1º)."
+
+        - id: cond_entidade
+          condition: =Global.TipoPessoa = "entidade"
+          actions:
+            - kind: Question
+              id: question_spEntidade
+              interruptionPolicy:
+                allowInterruption: true
+
+              variable: init:Topic.respostaEntidade
+              prompt: A consulta é formulada em nome próprio da entidade ou em nome dos associados/filiados?
+              entity:
+                kind: EmbeddedEntity
+                definition:
+                  kind: ClosedListEntity
+                  items:
+                    - id: Em nome próprio da entidade
+                      displayName: Em nome próprio da entidade
+
+                    - id: Em nome dos associados, COM autorização expressa
+                      displayName: Em nome dos associados, COM autorização expressa
+
+                    - id: Em nome dos associados, SEM autorização expressa
+                      displayName: Em nome dos associados, SEM autorização expressa
+
+            - kind: ConditionGroup
+              id: conditionGroup_spEntidade
+              conditions:
+                - id: cond_entidadePropria
+                  condition: =Topic.respostaEntidade = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spEntidade'.'Em nome próprio da entidade'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_entPropria
+                      variable: Global.SujeitoPassivo
+                      value: =true
+
+                - id: cond_entidadeComAut
+                  condition: =Topic.respostaEntidade = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spEntidade'.'Em nome dos associados, COM autorização expressa'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_entComAut
+                      variable: Global.SujeitoPassivo
+                      value: =true
+
+                    - kind: SendActivity
+                      id: lembrete_entAutorizacao
+                      activity: "📎 Lembrete: a cópia da autorização expressa (prevista em estatuto ou em documento individual/coletivo dos associados) deverá ser juntada ao processo digital da consulta."
+
+                - id: cond_entidadeSemAut
+                  condition: =Topic.respostaEntidade = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spEntidade'.'Em nome dos associados, SEM autorização expressa'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_motivoEntSemAut
+                      variable: Global.MotivoBloqueio
+                      value: ="entidade_sem_autorizacao"
+
+                    - kind: SetVariable
+                      id: setVariable_statusEntSemAut
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_insanavel"
+
+                    - kind: SendActivity
+                      id: debug_bloqEntSemAut
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: SendActivity
+                      id: placeholder_bloqEntSemAut
+                      activity: "[PLACEHOLDER] Aqui entrará o BLOQ - Legitimidade Material (entidade_sem_autorizacao)"
+
+    - kind: ConditionGroup
+      id: conditionGroup_continuar02
+      conditions:
+        - id: cond_fluxoAtivo02
+          condition: =Global.StatusFluxo = "iniciado"
+          actions:
+            - kind: SendActivity
+              id: debug_final02
+              activity: "[DEBUG] SujeitoPassivo:{Global.SujeitoPassivo} | StatusFluxo:{Global.StatusFluxo}"
+
+            - kind: BeginDialog
+              id: redirect_topico03
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.03-QuemProtocola
+
+inputType: {}
+outputType: {}
