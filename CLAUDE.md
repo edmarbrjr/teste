@@ -137,8 +137,16 @@ Inicializadas a cada sessão pelo tópico `ZZ - Inicializador de Variáveis`
    tópico é `teste4A` (nasceu como tópico de teste na depuração e o nome
    interno é imutável — §7.9); todas as referências de condição usam
    `...topic.teste4A.main...`. Nome de exibição deve ser "04 - DTE".
-   Pendente: reconstruir redirect do 03 via UI (nó quebrado apontava
-   para o antigo `topic.04-DTE`, excluído) e testar ponta a ponta.
+   Redirect do 03 reconstruído via UI. Pendente: teste ponta a ponta.
+8. **`05 - Matriz ou Filial`**: YAML em `topicos-gerados/05-MatrizouFilial.yaml`.
+   PF pula direto (grava `EMatriz=true`); PJ/orgao/entidade recebem pergunta
+   Sim/Não. Filial → `MotivoBloqueio="filial"` + `bloqueado_sanavel` (placeholder
+   SAN). Convergência sob guarda `StatusFluxo="iniciado"` → placeholder 06.
+9. **`06 - Competência Federal`**: YAML em `topicos-gerados/06-CompetenciaFederal.yaml`.
+   Nome interno do tópico: `06-CompetnciaFederal` (acento removido no 1º save —
+   §7.9). Pergunta com 4 opções: federal → `CompetenciaFederal=true`; ICMS/ISS →
+   bloqueio sanável; "não sei" → orientação + recheck (mesmo padrão do 04-DTE).
+   Recheck também tem ids únicos (Federal/ICMS/ISS). Convergência → placeholder 07.
 
 Tópicos automáticos criados pelo Studio em pt-BR: `Obrigado`, `Recomeçar`,
 `Saudação`, `Tchau` — **ainda não revisados** (ver pendências).
@@ -151,7 +159,8 @@ Tópicos automáticos criados pelo Studio em pt-BR: `Obrigado`, `Recomeçar`,
 - 5 tópicos `BLOQ -` (insanáveis) e 3 `SAN -` (sanáveis) + `FIM - Apto para
   Protocolo` — mensagens prontas no Blueprint.
 - Substituir os `[PLACEHOLDER]` por redirecionamentos reais aos BLOQ/SAN.
-- Próximo imediato: **`05 - Matriz ou Filial`** (após conclusão do 04).
+- Próximo imediato: **`07 - Fato Determinado`** (após conclusão do 06).
+- Conectar redirects: 04→05, 05→06 via UI (substituir placeholders).
 - Validar com o usuário: no tópico 03, órgão/entidade caem na pergunta
   versão PJ ("Representante legal da PJ (perfil e-CNPJ)...") — o Blueprint
   §4.4 só especifica PF e PJ; decidir se órgão/entidade merecem texto próprio.

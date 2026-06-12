@@ -1,0 +1,196 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: Question
+      id: question_tributo
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaTributo
+      prompt: |-
+        O tributo objeto da consulta é administrado pela Receita Federal do Brasil?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, é tributo federal (IR, IPI, PIS, COFINS, CSLL, CIDE, ITR, IOF...)
+              displayName: Sim, é tributo federal (IR, IPI, PIS, COFINS, CSLL, CIDE, ITR, IOF...)
+
+            - id: É ICMS (estadual)
+              displayName: É ICMS (estadual)
+
+            - id: É ISS (municipal)
+              displayName: É ISS (municipal)
+
+            - id: Não sei classificar
+              displayName: Não sei classificar
+
+    - kind: ConditionGroup
+      id: conditionGroup_tributo
+      conditions:
+        - id: cond_federal
+          condition: =Topic.respostaTributo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetnciaFederal.main.question_tributo'.'Sim, é tributo federal (IR, IPI, PIS, COFINS, CSLL, CIDE, ITR, IOF...)'
+          actions:
+            - kind: SetVariable
+              id: setVariable_competenciaTrue
+              variable: Global.CompetenciaFederal
+              value: =true
+
+        - id: cond_icms
+          condition: =Topic.respostaTributo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetnciaFederal.main.question_tributo'.'É ICMS (estadual)'
+          actions:
+            - kind: SetVariable
+              id: setVariable_motivoIcms
+              variable: Global.MotivoBloqueio
+              value: ="icms"
+
+            - kind: SetVariable
+              id: setVariable_statusIcms
+              variable: Global.StatusFluxo
+              value: ="bloqueado_sanavel"
+
+            - kind: SendActivity
+              id: debug_icms
+              activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+            - kind: SendActivity
+              id: placeholder_sanIcms
+              activity: "[PLACEHOLDER] Aqui entrará o SAN - Competência Errada (icms)"
+
+        - id: cond_iss
+          condition: =Topic.respostaTributo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetnciaFederal.main.question_tributo'.'É ISS (municipal)'
+          actions:
+            - kind: SetVariable
+              id: setVariable_motivoIss
+              variable: Global.MotivoBloqueio
+              value: ="iss"
+
+            - kind: SetVariable
+              id: setVariable_statusIss
+              variable: Global.StatusFluxo
+              value: ="bloqueado_sanavel"
+
+            - kind: SendActivity
+              id: debug_iss
+              activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+            - kind: SendActivity
+              id: placeholder_sanIss
+              activity: "[PLACEHOLDER] Aqui entrará o SAN - Competência Errada (iss)"
+
+        - id: cond_naoSei
+          condition: =Topic.respostaTributo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetnciaFederal.main.question_tributo'.'Não sei classificar'
+          actions:
+            - kind: SendActivity
+              id: msg_orientacaoTributo
+              activity: |-
+                Competência dos tributos no Brasil:
+
+                🔵 FEDERAIS (Receita Federal — consulte aqui):
+                • IRPF, IRPJ, IRRF
+                • IPI, PIS/Pasep, COFINS
+                • CSLL, CIDE-Remessas, CIDE-Combustíveis
+                • Contribuições previdenciárias patronais (INSS empresa)
+                • ITR, IOF, AFRMM
+                • Contribuições para terceiros (Sistema S)
+
+                🟡 ESTADUAIS (SEFAZ do seu estado):
+                • ICMS, IPVA, ITCMD
+
+                🟢 MUNICIPAIS (Prefeitura):
+                • ISS, IPTU, ITBI
+
+            - kind: Question
+              id: question_tributoRecheck
+              interruptionPolicy:
+                allowInterruption: true
+
+              variable: init:Topic.respostaTributoRecheck
+              prompt: "Agora sabe classificar? Qual é o tributo da sua dúvida?"
+              entity:
+                kind: EmbeddedEntity
+                definition:
+                  kind: ClosedListEntity
+                  items:
+                    - id: Federal (RFB) — é daqui
+                      displayName: Federal (RFB) — é daqui
+
+                    - id: Estadual — é ICMS
+                      displayName: Estadual — é ICMS
+
+                    - id: Municipal — é ISS
+                      displayName: Municipal — é ISS
+
+            - kind: ConditionGroup
+              id: conditionGroup_tributoRecheck
+              conditions:
+                - id: cond_recheckFederal
+                  condition: =Topic.respostaTributoRecheck = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetnciaFederal.main.question_tributoRecheck'.'Federal (RFB) — é daqui'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_recheckFederal
+                      variable: Global.CompetenciaFederal
+                      value: =true
+
+                - id: cond_recheckIcms
+                  condition: =Topic.respostaTributoRecheck = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetnciaFederal.main.question_tributoRecheck'.'Estadual — é ICMS'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_motivoRecheckIcms
+                      variable: Global.MotivoBloqueio
+                      value: ="icms"
+
+                    - kind: SetVariable
+                      id: setVariable_statusRecheckIcms
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_sanavel"
+
+                    - kind: SendActivity
+                      id: debug_recheckIcms
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: SendActivity
+                      id: placeholder_sanRecheckIcms
+                      activity: "[PLACEHOLDER] Aqui entrará o SAN - Competência Errada (icms)"
+
+                - id: cond_recheckIss
+                  condition: =Topic.respostaTributoRecheck = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetnciaFederal.main.question_tributoRecheck'.'Municipal — é ISS'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_motivoRecheckIss
+                      variable: Global.MotivoBloqueio
+                      value: ="iss"
+
+                    - kind: SetVariable
+                      id: setVariable_statusRecheckIss
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_sanavel"
+
+                    - kind: SendActivity
+                      id: debug_recheckIss
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: SendActivity
+                      id: placeholder_sanRecheckIss
+                      activity: "[PLACEHOLDER] Aqui entrará o SAN - Competência Errada (iss)"
+
+    - kind: ConditionGroup
+      id: conditionGroup_continuar06
+      conditions:
+        - id: cond_fluxoAtivo06
+          condition: =Global.StatusFluxo = "iniciado"
+          actions:
+            - kind: SendActivity
+              id: debug_final06
+              activity: "[DEBUG] CompetenciaFederal:{Global.CompetenciaFederal} | StatusFluxo:{Global.StatusFluxo}"
+
+            - kind: SendActivity
+              id: placeholder_topico07
+              activity: "[PLACEHOLDER] Aqui entrará o redirecionamento para 07 - Fato Determinado"
+
+inputType: {}
+outputType: {}
