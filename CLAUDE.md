@@ -137,7 +137,9 @@ Inicializadas a cada sessão pelo tópico `ZZ - Inicializador de Variáveis`
    tópico é `teste4A` (nasceu como tópico de teste na depuração e o nome
    interno é imutável — §7.9); todas as referências de condição usam
    `...topic.teste4A.main...`. Nome de exibição deve ser "04 - DTE".
-   Redirect do 03 reconstruído via UI. Pendente: teste ponta a ponta.
+   Redirect do 03 reconstruído via UI. Testado ponta a ponta em 12/06/2026:
+   os 5 percursos OK (opções 1/2 → DTEAtivo=true → placeholder 05; opção 3 →
+   bloqueio sanável sem vazar; opção 4 → recheck Sim e Não OK).
 8. **`05 - Matriz ou Filial`**: YAML em `topicos-gerados/05-MatrizouFilial.yaml`.
    PF pula direto (grava `EMatriz=true`); PJ/orgao/entidade recebem pergunta
    Sim/Não. Filial → `MotivoBloqueio="filial"` + `bloqueado_sanavel` (placeholder
