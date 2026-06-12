@@ -133,10 +133,12 @@ Inicializadas a cada sessão pelo tópico `ZZ - Inicializador de Variáveis`
 7. **`04 - DTE`**: YAML em `topicos-gerados/04-DTE.yaml`. Causa raiz do
    SystemError: ids de opção duplicados no mesmo tópico — ver §7.10.
    Versão final usa ids curtos únicos (`dte_ativo`, `dte_sn`, `sem_dte`,
-   `nao_sei`, `recheck_sim`, `recheck_nao`). Mensagem de orientação
-   conservadora (sem acentos/emojis) para evitar corrupção. Redirect
-   do tópico 03 reconstruído via UI após erro "tópico não disponível"
-   no Verificador (§7.9). Pendente: testar ponta a ponta.
+   `nao_sei`, `recheck_sim`, `recheck_nao`). ATENÇÃO: o nome INTERNO do
+   tópico é `teste4A` (nasceu como tópico de teste na depuração e o nome
+   interno é imutável — §7.9); todas as referências de condição usam
+   `...topic.teste4A.main...`. Nome de exibição deve ser "04 - DTE".
+   Pendente: reconstruir redirect do 03 via UI (nó quebrado apontava
+   para o antigo `topic.04-DTE`, excluído) e testar ponta a ponta.
 
 Tópicos automáticos criados pelo Studio em pt-BR: `Obrigado`, `Recomeçar`,
 `Saudação`, `Tchau` — **ainda não revisados** (ver pendências).
