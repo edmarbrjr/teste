@@ -10,11 +10,11 @@ beginDialog:
 
       variable: init:Topic.respostaTipoConsulta
       prompt: |-
-        Para começar, me diga que tipo de consulta você deseja formular: 
+        Para começar, me diga que tipo de consulta você deseja formular:
 
         **Interpretação da legislação tributária** (dúvida sobre como uma norma se aplica ao seu caso), ou
 
-         **Classificação de serviço, intangível ou operação** (dúvida sobre código NBS)
+        **Classificação de serviço, intangível ou operação** (dúvida sobre código NBS)
       entity:
         kind: EmbeddedEntity
         definition:

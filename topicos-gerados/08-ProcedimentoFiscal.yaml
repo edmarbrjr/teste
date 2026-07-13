@@ -12,13 +12,14 @@ beginDialog:
       variable: init:Topic.respostaFiscalizacao
       prompt: |-
         Sobre a matéria da sua consulta, existe ATUALMENTE algum dos procedimentos abaixo em curso?
-        🔎 **Fiscalização:** Procedimento fiscal já iniciado
 
-        📄 **Exigência:** Auto de infração ou intimação para cumprir obrigação
+        🔎 **Fiscalização:** procedimento fiscal já iniciado
 
-        🏛️ **Processo Administrativo:** Litígio pendente (ex.: DRJ, CARF)
+        📄 **Exigência:** auto de infração ou intimação para cumprir obrigação
 
-        ⚖️ **Ação Judicial:** Processo pendente na Justiça em que você é parte
+        🏛️ **Processo administrativo:** litígio pendente (ex.: DRJ, CARF)
+
+        ⚖️ **Ação judicial:** processo pendente na Justiça em que você é parte
       entity:
         kind: EmbeddedEntity
         definition:
@@ -28,7 +29,7 @@ beginDialog:
               displayName: Não há nenhum desses em curso
 
             - id: Sim, há algum Procedimento fiscal em curso sobre a mesma matéria
-              displayName: Sim, há algum Procedimento fiscal em curso sobre a mesma matéria
+              displayName: Sim, há algum desses em curso sobre a mesma matéria
 
             - id: Havia fiscalização, mas readquiri a espontaneidade
               displayName: Havia fiscalização, mas readquiri a espontaneidade

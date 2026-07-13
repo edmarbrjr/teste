@@ -44,7 +44,6 @@ beginDialog:
                 1. Para discutir a validade da norma, o caminho adequado é a via judicial (ação ordinária, mandado de segurança);
                 2. Se, além da questão de validade, você tem dúvida genuína de INTERPRETAÇÃO da norma aplicável ao seu caso concreto, reformule a consulta apenas nesse ponto — e refaça a triagem.
 
-      elseActions:
     - kind: SendActivity
       id: msg_bloqNormBase
       activity: "📖 Base legal: art. 27, VII, VIII e IX, da IN RFB 2.058/2021."

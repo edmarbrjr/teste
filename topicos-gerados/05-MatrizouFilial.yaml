@@ -22,7 +22,7 @@ beginDialog:
             allowInterruption: true
 
           variable: init:Topic.respostaMatriz
-          prompt: A consulta está sendo formulada pelo estabelecimento **matriz** (CNPJ raiz terminado em 0001-XX) e não por uma filial?
+          prompt: A consulta está sendo formulada pelo estabelecimento **matriz** (CNPJ com final 0001-XX) e não por uma filial?
           entity:
             kind: EmbeddedEntity
             definition:

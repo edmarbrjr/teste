@@ -255,7 +255,13 @@ Condição: resposta<Assunto> é igual a [OPÇÃO selecionada do dropdown]
    do nome de exibição no PRIMEIRO salvamento e não muda depois. Criar o
    tópico já com o nome definitivo antes de colar YAML com referências
    qualificadas (`...topic.02-LegitimidadeMaterial.main.question_X`).
-10. **IDs de opção duplicados no mesmo tópico → `SystemError` em runtime.**
+10. **Remoção de nós em YAML pode deixar `actions:`/`elseActions:` órfãos.**
+    Ao remover um nó (ex.: [DEBUG]) que era o ÚNICO filho de um `actions:` ou
+    `elseActions:`, a chave fica sem filhos (vira `null` no YAML) — e nó/ramo
+    vazio já causou erro de canvas (tópico 04). Após qualquer limpeza em massa,
+    validar com parser YAML procurando `actions`/`elseActions`/`conditions`
+    nulos; remover a chave órfã ou preencher o ramo com uma mensagem curta.
+11. **IDs de opção duplicados no mesmo tópico → `SystemError` em runtime.**
     Quando um tópico tem duas `Question` com `ClosedListEntity`, os `id`
     das opções precisam ser únicos no escopo do diálogo inteiro. Repetir
     o mesmo `id` em perguntas diferentes (ex.: `Não aderi ao DTE` em

@@ -70,10 +70,10 @@ beginDialog:
               kind: ClosedListEntity
               items:
                 - id: "Pessoa Física "
-                  displayName: "Pessoa Física "
+                  displayName: Pessoa Física
 
                 - id: "Pessoa Jurídica "
-                  displayName: "Pessoa Jurídica "
+                  displayName: Pessoa Jurídica
 
                 - id: Órgão da administração pública
                   displayName: Órgão da administração pública

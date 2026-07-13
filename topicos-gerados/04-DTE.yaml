@@ -66,7 +66,7 @@ beginDialog:
                       activity: |-
                         Para verificar ou aderir ao DTE:
 
-                        1. Acesse o e-CAC em gov.br/receitafederal
+                        1. Acesse o e-CAC: https://cav.receita.fazenda.gov.br
                         2. Faça login com sua conta gov.br (nível Prata ou Ouro)
                         3. Menu "Serviços em Destaque" → "Opção pelo Domicílio Tributário Eletrônico"
                         4. O sistema mostra se você já aderiu, com a data da adesão

@@ -9,11 +9,11 @@ beginDialog:
       activity: |-
         🟡 REQUISITO PENDENTE — CONSULTA DEVE SER DA MATRIZ
 
-        A consulta da pessoa jurídica deve ser formulada pelo **estabelecimento matriz** (CNPJ raiz terminado em 0001-XX). Formulada por filial, a consulta fica sujeita a não ter seus efeitos reconhecidos ou a exigências que atrasam a solução. **Não protocole pela filial.**
+        A consulta da pessoa jurídica deve ser formulada pelo **estabelecimento matriz** (CNPJ com final 0001-XX). Formulada por filial, a consulta fica sujeita a não ter seus efeitos reconhecidos ou a exigências que atrasam a solução. **Não protocole pela filial.**
 
         ✅ CAMINHO CORRETO: o processo deve ser aberto no CNPJ da MATRIZ, pelo representante legal ou por procurador com procuração eletrônica RFB da matriz (via "Alterar perfil de acesso").
 
-        ℹ️ Os efeitos da solução de consulta alcançam todos os estabelecimentos da PJ — não é necessário (nem cabível) uma consulta por filial.
+        ℹ️ Os efeitos da solução de consulta alcançam todos os estabelecimentos da PJ — não é necessária (nem cabível) uma consulta por filial.
 
         📖 Base legal: IN RFB 2.058/2021 [CONFERIR dispositivo exato com a Cosit antes da homologação].
     - kind: Question

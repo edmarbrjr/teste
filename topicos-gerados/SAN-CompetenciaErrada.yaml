@@ -43,15 +43,12 @@ beginDialog:
 
                 ℹ️ Se a sua operação também envolve a CBS, a parte da CBS PODE ser consultada na RFB — refaça a triagem escolhendo a opção da CBS.
 
-      elseActions:
     - kind: SendActivity
       id: msg_sanCompExplicacao
       activity: |-
-        🔴 **TRIBUTO FORA DA COMPETÊNCIA DA RECEITA FEDERAL**
+        Como a Receita Federal não possui competência legal para se manifestar sobre a legislação de outros entes federativos, não é possível processar esse pedido por aqui.
 
-        A sua consulta trata de matéria estranha à legislação tributária federal. Como a Receita Federal não possui competência legal para se manifestar sobre a legislação de outros entes federativos, não é possível processar este pedido.
-
-        💡 **Operações com Múltiplos Tributos:**Se a sua operação envolve tributos federais e **estaduais ou municipais** (ex.: PIS/COFINS e ICMS), formule duas consultas separadas: uma à RFB (restrita à parte federal) e outra ao fisco competente.
+        💡 **Operações com múltiplos tributos:** se a sua operação envolve tributos federais e **estaduais ou municipais** (ex.: PIS/COFINS e ICMS), formule duas consultas separadas: uma à RFB (restrita à parte federal) e outra ao fisco competente.
 
         📖 **Base legal:** art. 1º e art. 27, XIII, da IN RFB 2.058/2021.
     - kind: Question

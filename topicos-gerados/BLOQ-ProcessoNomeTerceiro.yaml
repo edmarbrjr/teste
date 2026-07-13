@@ -43,7 +43,6 @@ beginDialog:
                 2. Clique em **"Alterar perfil de acesso"** e selecione "Procurador de pessoa física - CPF" ou "Procurador de pessoa jurídica - CNPJ", informando o CPF/CNPJ do CONTRIBUINTE
                 3. Abra o processo — ele ficará registrado no CPF/CNPJ do contribuinte
 
-      elseActions:
     - kind: SendActivity
       id: msg_bloqTerceiroAtencao
       activity: |-

@@ -93,6 +93,10 @@ beginDialog:
         - id: cond_checklistOk
           condition: =Topic.respostaChecklist = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.10-ChecklistFormal.main.question_checklist'.'Sim, todos os itens estão completos'
           actions:
+            - kind: SendActivity
+              id: msg_checklistOk
+              activity: ✔️ Documento completo!
+
         - id: cond_checklistPendente
           condition: =Topic.respostaChecklist = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.10-ChecklistFormal.main.question_checklist'.'Não — ainda há itens pendentes'
           actions:
