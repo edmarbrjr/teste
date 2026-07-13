@@ -65,131 +65,114 @@ Inicializadas a cada sessão pelo tópico `ZZ - Inicializador de Variáveis`
 
 ## 5. Estado atual da construção
 
-### Concluído e testado de ponta a ponta ✅
+**Backup de referência:** `BackupAgentedeAdmissibilidade_1_0_0_3.zip` (não gerenciado).
+**Fonte local dos YAMLs:** `topicos-gerados/` — 22 arquivos limpos (sem [DEBUG]), prontos para colar no editor de código do Studio.
 
-1. **`Início da Conversa`** (sistema): mensagem de boas-vindas personalizada →
-   redirecionamento ao ZZ.
-2. **`ZZ - Inicializador de Variáveis`**: nó único "Definir variáveis" com as 12
-   atribuições + mensagem `[DEBUG] Variáveis inicializadas ✓` (temporária).
-3. **`00 - Tipo de Consulta`**: 8 frases de gatilho (`quero fazer uma consulta`,
-   `consulta sobre tributo`, `solução de consulta`, `dúvida sobre legislação
-   tributária`, `iniciar consulta`, `começar`, `sim`, `vamos começar`);
-   pergunta de múltipla escolha (2 opções); ramos gravam `Global.TipoConsulta`;
-   mensagens `[DEBUG]` por ramo; redirecionamento aos dois ramos → `01`.
-   Reconhecimento validado por clique, número (`1`/`2`) e texto.
-4. **`01 - Tipo de Pessoa`**: sem frases de gatilho (alcançado só por
-   redirecionamento); condição de entrada `Global.TipoConsulta = nbs`;
-   - ramo NBS: pergunta de confirmação de PJ → `Sim` grava `TipoPessoa = "pj"`;
-     `Não` exibe `[PLACEHOLDER] BLOQ - Legitimidade Material (pf_nbs)`;
-   - ramo Interpretação ("Todas as outras condições"): pergunta "Quem é o
-     consulente?" com 4 opções → grava `pf`/`pj`/`orgao`/`entidade`;
-   - mensagem `[DEBUG] TipoPessoa:` no ponto de convergência.
-   - Corrigido em 11/06/2026 via colagem do YAML completo
-     (`topicos-gerados/01-TipodePessoa.yaml`). Defeitos eliminados: condição
-     de entrada comparava `Global.TipoPessoa` (sempre vazia) em vez de
-     `Global.TipoConsulta`; ramo `Sim` tinha `TipoPessoa = "pj"` como 2ª
-     linha da CONDIÇÃO (comparação, nunca gravava). Estado final: ramo
-     `Não` grava `MotivoBloqueio="pf_nbs"` + `StatusFluxo="bloqueado_insanavel"`
-     antes do placeholder; convergência (DEBUG + ir para 02) vale para os
-     dois ramos, sob guarda `StatusFluxo = "iniciado"`. Retestado: NBS+Sim →
-     pergunta de confirmação → pj → tópico 02; NBS+Não → bloqueio sem vazar
-     para o 02. Lição: gravação dentro de condição é armadilha recorrente
-     (ver §7 item 4).
-5. **`02 - Legitimidade Material`**: criado por colagem de YAML
-   (`topicos-gerados/02-LegitimidadeMaterial.yaml`) e testado nos 3 ramos.
-   Ramificação por `TipoPessoa`: pf OU pj (operador `||` — primeira condição
-   com dois valores no mesmo ramo), `orgao`, `entidade`.
-   - pf/pj: pergunta de sujeito passivo → Sim grava `SujeitoPassivo=true`;
-     Não → `MotivoBloqueio="nao_sujeito_passivo"` + bloqueio insanável
-     (placeholder BLOQ).
-   - orgao: pergunta se o órgão é sujeito passivo → ambos os ramos gravam
-     `SujeitoPassivo=true`; o ramo "não figura como sujeito passivo" exibe
-     aviso citando arts. 18, 23 e 27 §1º (efeitos não alcançam o sujeito
-     passivo; solução meramente informativa). ATENÇÃO: a redação difere do
-     Blueprint §4.3 — a IN não cria "consulta informativa"; rótulo da opção
-     e aviso foram corrigidos (arts. 14 §2º I, 23, 27 §1º). Usuário vai
-     deliberar com os superiores se o ramo permanece.
-   - entidade: 3 opções → nome próprio (true), associados COM autorização
-     (true + lembrete de juntar a autorização), associados SEM autorização
-     (`entidade_sem_autorizacao`, bloqueio insanável).
-   - Convergência: DEBUG SujeitoPassivo/StatusFluxo sob guarda
-     `StatusFluxo = "iniciado"` (padrão a repetir nos próximos).
-     Em 12/06/2026 o placeholder da convergência foi substituído pelo
-     redirecionamento real (`BeginDialog` → `...topic.03-QuemProtocola`).
-6. **`03 - Quem Protocola`**: criado em 12/06/2026 pelo PRÓPRIO Claude Code
-   via extensão Claude in Chrome (ver §8). YAML em
-   `topicos-gerados/03-QuemProtocola.yaml`. Estrutura: mensagem prévia
-   (regra "Alterar perfil de acesso", Blueprint §4.4) → condição
-   `TipoPessoa = "pf"` (pergunta versão PF) / "Todas as outras condições"
-   (pergunta versão PJ — vale também para orgao/entidade, A VALIDAR com o
-   usuário se merece texto próprio); 4 opções por versão: proprio /
-   procurador_rfb / terceiro SEM procuração (`terceiro_sem_procuracao`,
-   bloqueio insanável) / terceiro COM procuração mas em nome próprio
-   (`terceiro_nome_proprio`, bloqueio insanável). Convergência sob guarda:
-   DEBUG QuemAssina + placeholder do 04 - DTE. Testado de ponta a ponta:
-   PF→próprio (chega ao placeholder 04) e NBS→PJ→contador com procuração
-   em nome próprio (bloqueia sem vazar). DEBUG imprime booleano como
-   "Sim" no webchat (SujeitoPassivo:Sim = true, normal).
-7. **`04 - DTE`**: YAML em `topicos-gerados/04-DTE.yaml`. Causa raiz do
-   SystemError: ids de opção duplicados no mesmo tópico — ver §7.10.
-   Versão final usa ids curtos únicos (`dte_ativo`, `dte_sn`, `sem_dte`,
-   `nao_sei`, `recheck_sim`, `recheck_nao`). ATENÇÃO: o nome INTERNO do
-   tópico é `teste4A` (nasceu como tópico de teste na depuração e o nome
-   interno é imutável — §7.9); todas as referências de condição usam
-   `...topic.teste4A.main...`. Nome de exibição deve ser "04 - DTE".
-   Redirect do 03 reconstruído via UI. Testado ponta a ponta em 12/06/2026:
-   os 5 percursos OK (opções 1/2 → DTEAtivo=true → placeholder 05; opção 3 →
-   bloqueio sanável sem vazar; opção 4 → recheck Sim e Não OK).
-8. **`05 - Matriz ou Filial`**: YAML em `topicos-gerados/05-MatrizouFilial.yaml`.
-   PF pula direto (grava `EMatriz=true`); PJ/orgao/entidade recebem pergunta
-   Sim/Não. Filial → `MotivoBloqueio="filial"` + `bloqueado_sanavel` (placeholder
-   SAN). Convergência sob guarda `StatusFluxo="iniciado"` → placeholder 06.
-9. **`06 - Competência Federal`**: YAML em `topicos-gerados/06-CompetenciaFederal.yaml`.
-   Nome interno do tópico: `06-CompetnciaFederal` (acento removido no 1º save —
-   §7.9). Pergunta com 4 opções: federal → `CompetenciaFederal=true`; ICMS/ISS →
-   bloqueio sanável; "não sei" → orientação + recheck (mesmo padrão do 04-DTE).
-   Recheck também tem ids únicos (Federal/ICMS/ISS). Convergência → placeholder 07.
+### Fluxo completo construído e testado ✅
 
-Tópicos automáticos criados pelo Studio em pt-BR: `Obrigado`, `Recomeçar`,
-`Saudação`, `Tchau` — **ainda não revisados** (ver pendências).
+**Triagem (10 níveis):**
+
+1. **`Início da Conversa`** → `ZZ` automaticamente (abertura sem gatilho).
+2. **`ZZ - Inicializador de Variáveis`**: inicializa 12 variáveis → redireciona a `00`.
+   YAML: `ZZ-InicializadordeVariveis.yaml`.
+3. **`00 - Tipo de Consulta`**: pergunta (2 opções) → grava `TipoConsulta` → `01`.
+   YAML: `00-TipodeConsulta.yaml`. Tópico é `OnRedirect` (alcançado só por redirect).
+4. **`01 - Tipo de Pessoa`**: NBS→confirma PJ; Interpretação→4 opções. Grava
+   `TipoPessoa`. YAML: `01-TipodePessoa.yaml`. Nome interno: `01-TipodePessoa`.
+5. **`02 - Legitimidade Material`**: ramifica por `TipoPessoa` (pf/pj, orgao,
+   entidade). Grava `SujeitoPassivo`. YAML: `02-LegitimidadeMaterial.yaml`.
+6. **`03 - Quem Protocola`**: versão PF / PJ (inclui orgao/entidade). 4 opções
+   por versão. Grava `QuemAssina`. YAML: `03-QuemProtocola.yaml`.
+   Nome interno: `03-Quemprotocola`.
+7. **`04 - DTE`**: PF recebe pergunta (sim/não/não sei+recheck); PJ/orgao/entidade
+   recebem `DTEAtivo=true` automático. YAML: `04-DTE.yaml`.
+   **Nome interno imutável: `teste4A`** — todas as refs usam `...topic.teste4A...`.
+8. **`05 - Matriz ou Filial`**: PF pula (grava `EMatriz=true`); PJ/orgao/entidade
+   recebem pergunta Sim/Não. YAML: `05-MatrizouFilial.yaml`.
+9. **`06 - Competência Federal`**: 4 opções: federal, ICMS, ISS, IBS, não sei.
+   CBS prossegue; IBS vai ao Comitê Gestor; ambos CBS+IBS pode prosseguir só CBS.
+   YAML: `06-CompetenciaFederal.yaml`. Nome interno: `06-CompetnciaFederal`.
+10. **`07 - Fato Determinado`**: concreto/determinado vs. hipótese genérica.
+    YAML: `07-FatoDeterminado.yaml`. Correção aplicada: removido `BeginDialog` nu
+    (código morto) fora do grupo de condições.
+11. **`08 - Procedimento Fiscal`**: 3 opções (nenhum/em curso/espontaneidade
+    readquirida). YAML: `08-ProcedimentoFiscal.yaml`.
+12. **`09 - Decisão Anterior`**: 4 opções (nenhuma/decisão anterior/matéria
+    normatizada/constitucionalidade). YAML: `09-DecisoAnterior.yaml`.
+    Nome interno: `09-DecisoAnterior`.
+13. **`10 - Checklist Formal`**: exibe checklist por Anexo (I/II/III); pergunta
+    se todos os itens estão completos. YAML: `10-ChecklistFormal.yaml`.
+
+**Destinos de bloqueio — insanáveis (5 BLOQs):**
+
+- **`BLOQ - Legitimidade Material`**: cobre `pf_nbs`, `nao_sujeito_passivo`,
+  `entidade_sem_autorizacao`. YAML: `BLOQ-LegitimidadeMaterial.yaml`.
+- **`BLOQ - Processo Nome Terceiro`**: cobre `terceiro_sem_procuracao`,
+  `terceiro_nome_proprio`. YAML: `BLOQ-ProcessoNomeTerceiro.yaml`.
+- **`BLOQ - Fiscalização em Curso`**: cobre `fiscalizacao_em_curso`.
+  YAML: `BLOQ-FiscalizaoemCurso.yaml`. Nome interno: `BLOQ-FiscalizaoemCurso`.
+- **`BLOQ - Decisão Anterior`**: cobre `decisao_anterior`.
+  YAML: `BLOQ-DecisoAnterior.yaml`. Nome interno: `BLOQ-DecisoAnterior`.
+- **`BLOQ - Matéria Normatizada`**: cobre `materia_normatizada`,
+  `constitucionalidade`. YAML: `BLOQ-MatriaNormatizada.yaml`.
+  Nome interno: `BLOQ-MatriaNormatizada`.
+
+Todos os BLOQs têm pergunta de reinício → ZZ → 00 (ou encerrar com despedida).
+
+**Destinos de bloqueio — sanáveis (4 SANs):**
+
+- **`SAN - DTE Ausente`**: orienta adesão ao DTE no e-CAC → se aderir, retoma
+  em `05`. YAML: `SAN-DTEAusente.yaml`.
+- **`SAN - Matriz ou Filial`**: orienta usar CNPJ da matriz → se confirmar,
+  retoma em `06`. YAML: `SAN-MatrizouFilial.yaml`.
+- **`SAN - Competência Errada`**: ICMS→SEFAZ / ISS→Município / IBS→cgibs.gov.br.
+  Opção de refazer triagem. YAML: `SAN-CompetenciaErrada.yaml`.
+  Nome interno: `SAN-CompetnciaErrada`.
+- **`SAN - Fato Genérico`**: orienta reformulação com fato concreto → se
+  reformulou, retoma em `08`. YAML: `SAN-FatoGenerico.yaml`.
+  Nome interno: `SAN-FatoGenrico`.
+
+**Conclusão positiva:**
+
+- **`FIM - Apto para Protocolo`** (`IM-AptoparaProtocolo`): exibe checklist de
+  aprovação + próximos passos por Anexo (I/II/III) + ressalva. Opção de reinício.
+  YAML: `FIM-AptoparaProtocolo.yaml`. Nome interno: `IM-AptoparaProtocolo`.
+
+**Bateria de 7+ testes aprovada:** fluxos PF/PJ/NBS até o FIM, BLOQs insanáveis
+parando no lugar certo, SANs com retomada da triagem.
 
 ### Pendente 🔲
 
-- Tópicos de triagem `02` a `10` (Legitimidade Material, Quem Protocola, DTE,
-  Matriz/Filial, Competência Federal, Fato Determinado, Procedimento Fiscal,
-  Decisão Anterior, Checklist Formal) — especificação completa no Blueprint §4.
-- 5 tópicos `BLOQ -` (insanáveis) e 3 `SAN -` (sanáveis) + `FIM - Apto para
-  Protocolo` — mensagens prontas no Blueprint.
-- Substituir os `[PLACEHOLDER]` por redirecionamentos reais aos BLOQ/SAN.
-- Próximo imediato: **`07 - Fato Determinado`** (após conclusão do 06).
-- Conectar redirects: 04→05, 05→06 via UI (substituir placeholders).
-- Validar com o usuário: no tópico 03, órgão/entidade caem na pergunta
-  versão PJ ("Representante legal da PJ (perfil e-CNPJ)...") — o Blueprint
-  §4.4 só especifica PF e PJ; decidir se órgão/entidade merecem texto próprio.
-- Emendar o Blueprint §4.3 (ramo Órgão): trocar "consulta meramente
-  informativa" pela redação correta (situação em que o órgão não figura como
-  sujeito passivo — arts. 14 §2º I, 23 e 27 §1º). Usuário deliberará com os
-  superiores se o ramo Órgão permanece no fluxo.
-- Tópicos 09/10 (Checklist): decidir como registrar que órgão não sujeito
-  passivo dispensa as declarações do art. 14 (§2º, I) — hoje o fluxo grava
-  `SujeitoPassivo=true` genérico e perde essa informação.
-- Remover todas as mensagens `[DEBUG]` antes da homologação.
-- Compartilhar agente com a equipe (botão Compartilhar; agentes não são
-  visíveis entre usuários sem compartilhamento explícito).
-- Revisar tópicos automáticos `Saudação` e `Recomeçar` (conflito potencial
-  com o fluxo).
-- Re-exportar a solução como NÃO gerenciada e descompactar em `solucao/` —
-  o zip atual (`Cosit_1_0_0_1_managed.zip`) é GERENCIADO (não serve como
-  backup editável) e está defasado em relação ao Studio (anterior à correção
-  do tópico 01). Obs.: o prefixo real do publisher no export é `cr7f3`, não
-  `cosit` como planejado no §3 — verificar/ajustar o publisher da solução.
-- Mensagens [DEBUG] com `[` de abertura faltando (aparece `DEBUG]`): ramo
-  Interpretação do tópico 00 e convergência do tópico 01 — cosmético, serão
-  removidas antes da homologação de toda forma.
-- Discutir com TI: ambiente compartilhado (Sandbox) para a equipe; papéis de
-  segurança (faixa de "privilégios insuficientes" apareceu no make.powerapps);
+**Aplicar YAMLs limpos no Studio (pré-homologação):**
+- Os 22 YAMLs em `topicos-gerados/` foram gerados sem [DEBUG] nesta sessão.
+  O Studio ainda tem as versões COM [DEBUG] — é necessário colar os YAMLs limpos
+  via editor de código (menu `...` do tópico → "Abrir o editor de códigos").
+  Prioridade: fazer isso tópico a tópico, testando após cada colagem.
+- Após aplicar o 07 limpo: verificar que o `BeginDialog` nu ao SAN-FatoGenrico
+  (código morto) foi realmente removido pelo Studio (o YAML limpo já não o tem).
+
+**Decisões pendentes com o usuário:**
+- Validar: no tópico 03, órgão/entidade caem na pergunta versão PJ
+  ("Representante legal da PJ (perfil e-CNPJ)...") — decidir se merecem texto
+  próprio.
+- Emendar Blueprint §4.3 (ramo Órgão): texto correto (arts. 14 §2º I, 23, 27 §1º)
+  vs. "consulta meramente informativa" — decidir com os superiores se o ramo permanece.
+- Tópicos 09/10: decidir como registrar que órgão não sujeito passivo dispensa
+  declarações do art. 14 §2º I (hoje grava `SujeitoPassivo=true` genérico).
+- Validar dispositivo legal exato do SAN Matriz/Filial (referência marcada como
+  `[CONFERIR dispositivo exato com a Cosit antes da homologação]`).
+- Validar nomes de Área de Concentração e Área Temática do e-CAC no FIM
+  (tópico `IM-AptoparaProtocolo`) — estão preenchidos mas devem ser conferidos
+  no e-CAC atual.
+
+**Infraestrutura e publicação:**
+- Compartilhar agente com a equipe (botão Compartilhar no Studio).
+- Revisar tópicos automáticos `Saudação` e `Recomeçar` (conflito potencial com o fluxo).
+- Discutir com TI: ambiente compartilhado (Sandbox); papéis de segurança;
   fase 2 do Blueprint §11 (Dataverse/Power Automate/Power BI).
 - Analytics customizado (Blueprint §6) e publicação (§7).
+- Re-exportar como NÃO gerenciada após aplicar todos os YAMLs limpos.
+  Obs.: prefixo real do publisher é `cr7f3` (não `cosit` como planejado em §3).
 
 ## 6. Padrões e convenções de construção (IMPORTANTE)
 

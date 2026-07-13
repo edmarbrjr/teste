@@ -1,0 +1,77 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SendActivity
+      id: msg_sanDte
+      activity: |-
+        🟡 REQUISITO PENDENTE — ADESÃO AO DTE
+
+        A adesão prévia ao Domicílio Tributário Eletrônico (DTE) é requisito obrigatório da consulta (art. 12 da IN RFB 2.058/2021). **Sem o DTE ativo, não protocole** — a consulta não seguirá seu curso normal: você será intimado por via postal para regularizar, o que costuma custar semanas de atraso, e a consulta poderá ser declarada ineficaz se a intimação não for atendida no prazo.
+
+        A boa notícia: a adesão é gratuita, imediata e leva poucos minutos.
+
+        ✅ Como aderir agora:
+
+        1. Acesse o Portal e-CAC: https://cav.receita.fazenda.gov.br
+        2. Entre com sua conta gov.br (nível Prata ou Ouro)
+        3. No menu, procure "Opção pelo Domicílio Tributário Eletrônico"
+        4. Leia o termo de opção e clique em "Solicitar Adesão" — o efeito é imediato
+        5. Volte aqui e continue a triagem
+
+    - kind: Question
+      id: question_dteSan
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaDteSan
+      prompt: Você conseguiu aderir ao DTE agora?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, aderi — quero continuar a triagem
+              displayName: Sim, aderi — quero continuar a triagem
+
+            - id: Ainda não consigo aderir agora — encerrar
+              displayName: Ainda não consigo aderir agora — encerrar
+
+    - kind: ConditionGroup
+      id: conditionGroup_dteSan
+      conditions:
+        - id: cond_sanAderiu
+          condition: =Topic.respostaDteSan = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-DTEAusente.main.question_dteSan'.'Sim, aderi — quero continuar a triagem'
+          actions:
+            - kind: SetVariable
+              id: setVariable_sanDteAtivo
+              variable: Global.DTEAtivo
+              value: =true
+
+            - kind: SetVariable
+              id: setVariable_sanStatusReset
+              variable: Global.StatusFluxo
+              value: ="iniciado"
+
+            - kind: SetVariable
+              id: setVariable_sanMotivoReset
+              variable: Global.MotivoBloqueio
+              value: =""
+            - kind: BeginDialog
+              id: redirect_san05
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.05-MatrizouFilial
+
+        - id: cond_sanDepois
+          condition: =Topic.respostaDteSan = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-DTEAusente.main.question_dteSan'.'Ainda não consigo aderir agora — encerrar'
+          actions:
+            - kind: SendActivity
+              id: msg_sanEncerrar
+              activity: |-
+                Tudo bem! Só reforçando: **não protocole a consulta antes de aderir ao DTE** — protocolar sem a adesão gera intimação postal, atraso e risco de ineficácia.
+
+                Quando tiver aderido (leva poucos minutos no e-CAC: https://cav.receita.fazenda.gov.br), volte aqui e recomece a triagem para conferir os demais requisitos. Até logo! 👋
+
+inputType: {}
+outputType: {}

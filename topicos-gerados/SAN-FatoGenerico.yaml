@@ -1,0 +1,74 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SendActivity
+      id: msg_sanFatoGenerico
+      activity: |-
+        🟡 REQUISITO PENDENTE — FATO GENÉRICO OU HIPOTÉTICO
+
+        Consulta em tese, sobre fato genérico ou sem identificação do dispositivo legal específico, é ineficaz (art. 27, II, da IN RFB 2.058/2021). Essa hipótese está no rol sanável do art. 28, parágrafo único — mas contar com a intimação significa +30 dias de atraso e risco de ineficácia se o prazo não for cumprido. **Não protocole antes de reformular.**
+
+        ✅ Antes de protocolar, garanta que a consulta contenha:
+
+        1. Descrição detalhada do fato concreto (datas, valores, partes, operações)
+        2. Se o fato ainda não ocorreu: demonstração da vinculação do consulente ao fato e da efetiva possibilidade de ocorrência (art. 13, § 1º)
+        3. Indicação EXPRESSA dos dispositivos sobre cuja aplicação há dúvida (artigo, inciso, parágrafo)
+        4. A sua interpretação sobre a norma e o ponto exato da dúvida
+
+        Não basta indicar o fato e a lei — é preciso expor a matéria completa e detalhadamente.
+
+        📖 Base legal: arts. 13 e 27, II, e art. 28, parágrafo único, da IN RFB 2.058/2021.
+    - kind: Question
+      id: question_sanFatoContinuar
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaSanFatoContinuar
+      prompt: Já reformulou a descrição do fato? Se sim, a triagem pode continuar de onde parou.
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, o fato agora está concreto e determinado — continuar
+              displayName: Sim, o fato agora está concreto e determinado — continuar
+
+            - id: Vou reformular depois — encerrar
+              displayName: Vou reformular depois — encerrar
+
+    - kind: ConditionGroup
+      id: conditionGroup_sanFatoContinuar
+      conditions:
+        - id: cond_sanFatoContinuarSim
+          condition: =Topic.respostaSanFatoContinuar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-FatoGenrico.main.question_sanFatoContinuar'.'Sim, o fato agora está concreto e determinado — continuar'
+          actions:
+            - kind: SetVariable
+              id: setVariable_sanFatoTrue
+              variable: Global.FatoDeterminado
+              value: =true
+
+            - kind: SetVariable
+              id: setVariable_sanFatoStatus
+              variable: Global.StatusFluxo
+              value: ="iniciado"
+
+            - kind: SetVariable
+              id: setVariable_sanFatoMotivo
+              variable: Global.MotivoBloqueio
+              value: =""
+            - kind: BeginDialog
+              id: redirect_sanFato08
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.08-ProcedimentoFiscal
+
+        - id: cond_sanFatoEncerrar
+          condition: =Topic.respostaSanFatoContinuar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-FatoGenrico.main.question_sanFatoContinuar'.'Vou reformular depois — encerrar'
+          actions:
+            - kind: SendActivity
+              id: msg_sanFatoDespedida
+              activity: Combinado. Reformule com calma — **não protocole antes** — e volte para concluir a triagem. 👋
+
+inputType: {}
+outputType: {}

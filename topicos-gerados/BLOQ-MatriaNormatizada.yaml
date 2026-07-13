@@ -1,0 +1,91 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SendActivity
+      id: msg_bloqNormTitulo
+      activity: 🔴 BLOQUEIO INSANÁVEL — MATÉRIA JÁ DISCIPLINADA
+
+    - kind: ConditionGroup
+      id: conditionGroup_bloqNormMotivo
+      conditions:
+        - id: cond_bloqNormatizada
+          condition: =Global.MotivoBloqueio = "materia_normatizada"
+          actions:
+            - kind: SendActivity
+              id: msg_bloqNormatizada
+              activity: |-
+                A situação consultada se enquadra em uma destas hipóteses do art. 27 da IN RFB 2.058/2021:
+
+                • fato disciplinado em ato normativo publicado na Imprensa Oficial antes da apresentação da consulta (inciso VII); ou
+                • fato definido em disposição literal de lei (inciso IX).
+
+                Não há o que interpretar quando a matéria já está expressamente disciplinada — a consulta seria redundante e resultaria em ineficácia direta (os incisos VII e IX não estão no rol sanável).
+
+                💡 ALTERNATIVAS:
+
+                1. Aplique diretamente a norma ou a lei publicada;
+                2. Se a sua dúvida é sobre ASPECTO ESPECÍFICO **não coberto** pelo ato normativo, reformule a consulta para focar exatamente nesse ponto — nesse caso, refaça a triagem.
+
+        - id: cond_bloqConstitucionalidade
+          condition: =Global.MotivoBloqueio = "constitucionalidade"
+          actions:
+            - kind: SendActivity
+              id: msg_bloqConstitucionalidade
+              activity: |-
+                Consulta sobre **constitucionalidade ou legalidade** da legislação tributária é ineficaz (art. 27, VIII, da IN RFB 2.058/2021) — e o inciso VIII não está no rol sanável.
+
+                O processo de consulta serve para interpretar a legislação, não para questionar sua validade: a RFB não tem competência para afastar norma vigente.
+
+                💡 ALTERNATIVAS:
+
+                1. Para discutir a validade da norma, o caminho adequado é a via judicial (ação ordinária, mandado de segurança);
+                2. Se, além da questão de validade, você tem dúvida genuína de INTERPRETAÇÃO da norma aplicável ao seu caso concreto, reformule a consulta apenas nesse ponto — e refaça a triagem.
+
+      elseActions:
+    - kind: SendActivity
+      id: msg_bloqNormBase
+      activity: "📖 Base legal: art. 27, VII, VIII e IX, da IN RFB 2.058/2021."
+    - kind: Question
+      id: question_bloqNormReiniciar
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaBloqNormReiniciar
+      prompt: Deseja refazer a triagem (por exemplo, com a consulta reformulada para o ponto não disciplinado)?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, refazer a triagem
+              displayName: Sim, refazer a triagem
+
+            - id: Não, encerrar
+              displayName: Não, encerrar
+
+    - kind: ConditionGroup
+      id: conditionGroup_bloqNormReiniciar
+      conditions:
+        - id: cond_bloqNormReiniciarSim
+          condition: =Topic.respostaBloqNormReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-MatriaNormatizada.main.question_bloqNormReiniciar'.'Sim, refazer a triagem'
+          actions:
+            - kind: BeginDialog
+              id: SRkJjh
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.ZZ-InicializadordeVariveis
+
+            - kind: BeginDialog
+              id: 49oTp8
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.00-TipodeConsulta
+
+        - id: cond_bloqNormEncerrar
+          condition: =Topic.respostaBloqNormReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-MatriaNormatizada.main.question_bloqNormReiniciar'.'Não, encerrar'
+          actions:
+            - kind: SendActivity
+              id: msg_bloqNormDespedida
+              activity: Entendido. Se reformular a consulta para um ponto não disciplinado, volte para refazer a triagem. 👋
+
+inputType: {}
+outputType: {}

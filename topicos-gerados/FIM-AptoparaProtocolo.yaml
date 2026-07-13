@@ -1,0 +1,124 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SetVariable
+      id: setVariable_statusApto
+      variable: Global.StatusFluxo
+      value: ="apto"
+
+    - kind: SendActivity
+      id: msg_fimChecklist
+      activity: |-
+        🟢 CONSULTA APARENTEMENTE APTA PARA PROTOCOLO
+
+        Sua consulta passou por todos os filtros de admissibilidade:
+
+        ✔️ Tipo de consulta adequado ao anexo
+        ✔️ Consulente com legitimidade ativa (sujeito passivo ou equivalente legal)
+        ✔️ Processo a ser aberto em nome do próprio contribuinte ou por representante legítimo
+        ✔️ DTE ativo
+        ✔️ Estabelecimento matriz (quando aplicável)
+        ✔️ Tributo federal administrado pela RFB
+        ✔️ Fato concreto e determinado
+        ✔️ Sem procedimento fiscal ou litígio em curso sobre a matéria
+        ✔️ Sem decisão anterior não modificada
+        ✔️ Documento formalmente completo
+
+    - kind: ConditionGroup
+      id: conditionGroup_fimAnexo
+      conditions:
+        - id: cond_fimNbs
+          condition: =Global.TipoConsulta = "nbs"
+          actions:
+            - kind: SendActivity
+              id: msg_fimPassosNbs
+              activity: |-
+                📌 PRÓXIMOS PASSOS:
+
+                1. Acesse o e-CAC: https://cav.receita.fazenda.gov.br
+                2. "Solicitar Serviço via Processo Digital"
+                3. Selecione a Área de Concentração TRIBUTAÇÃO e a área temática de CONSULTA SOBRE CLASSIFICAÇÃO FISCAL DE SERVIÇOS, INTANGÍVEIS E OUTRAS OPERAÇÕES (NBS)
+                4. Anexe o **Anexo III** preenchido
+                5. Preencha o questionário "Associar Alegações" — OBRIGATÓRIO
+                6. ⏰ ATENÇÃO: você tem 3 DIAS ÚTEIS após a abertura do processo para juntar todos os documentos; caso contrário, o processo é EXCLUÍDO automaticamente e não produz efeitos (art. 8º, § 3º, da IN RFB 2.058/2021).
+
+        - id: cond_fimPf
+          condition: =Global.TipoPessoa = "pf"
+          actions:
+            - kind: SendActivity
+              id: msg_fimPassosPf
+              activity: |-
+                📌 PRÓXIMOS PASSOS:
+
+                1. Acesse o e-CAC: https://cav.receita.fazenda.gov.br
+                2. "Solicitar Serviço via Processo Digital"
+                3. Selecione a Área de Concentração TRIBUTAÇÃO e a área temática de CONSULTA SOBRE INTERPRETAÇÃO DA LEGISLAÇÃO TRIBUTÁRIA — PESSOA FÍSICA
+                4. Anexe o **Anexo I** preenchido
+                5. Preencha o questionário "Associar Alegações" — OBRIGATÓRIO
+                6. ⏰ ATENÇÃO: você tem 3 DIAS ÚTEIS após a abertura do processo para juntar todos os documentos; caso contrário, o processo é EXCLUÍDO automaticamente e não produz efeitos (art. 8º, § 3º, da IN RFB 2.058/2021).
+
+      elseActions:
+        - kind: SendActivity
+          id: msg_fimPassosPj
+          activity: |-
+            📌 PRÓXIMOS PASSOS:
+
+            1. Acesse o e-CAC: https://cav.receita.fazenda.gov.br
+            2. "Solicitar Serviço via Processo Digital"
+            3. Selecione a Área de Concentração TRIBUTAÇÃO e a área temática de CONSULTA SOBRE INTERPRETAÇÃO DA LEGISLAÇÃO TRIBUTÁRIA — PESSOA JURÍDICA
+            4. Anexe o **Anexo II** preenchido
+            5. Preencha o questionário "Associar Alegações" — OBRIGATÓRIO
+            6. ⏰ ATENÇÃO: você tem 3 DIAS ÚTEIS após a abertura do processo para juntar todos os documentos; caso contrário, o processo é EXCLUÍDO automaticamente e não produz efeitos (art. 8º, § 3º, da IN RFB 2.058/2021).
+
+    - kind: SendActivity
+      id: msg_fimRessalva
+      activity: |-
+        ⚠️ RESSALVA IMPORTANTE:
+
+        Este assistente orienta com base em requisitos verificáveis da IN RFB 2.058/2021. A admissibilidade formal DEFINITIVA é sempre avaliada pela equipe competente da Receita Federal ao receber o processo.
+
+        Este diálogo não substitui a análise caso a caso e não gera efeito vinculante. Em caso de dúvida específica, procure a unidade da RFB antes de protocolar.
+    - kind: Question
+      id: question_fimReiniciar
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaFimReiniciar
+      prompt: Deseja reiniciar a triagem para verificar outra consulta?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, verificar outra consulta
+              displayName: Sim, verificar outra consulta
+
+            - id: Não, encerrar
+              displayName: Não, encerrar
+
+    - kind: ConditionGroup
+      id: conditionGroup_fimReiniciar
+      conditions:
+        - id: cond_fimReiniciarSim
+          condition: =Topic.respostaFimReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.IM-AptoparaProtocolo.main.question_fimReiniciar'.'Sim, verificar outra consulta'
+          actions:
+            - kind: BeginDialog
+              id: 76dtIT
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.ZZ-InicializadordeVariveis
+
+            - kind: BeginDialog
+              id: I04ZHO
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.00-TipodeConsulta
+
+        - id: cond_fimEncerrar
+          condition: =Topic.respostaFimReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.IM-AptoparaProtocolo.main.question_fimReiniciar'.'Não, encerrar'
+          actions:
+            - kind: SendActivity
+              id: msg_fimDespedida
+              activity: Boa sorte com a sua consulta! Se precisar verificar outra, é só voltar aqui. 👋
+
+inputType: {}
+outputType: {}

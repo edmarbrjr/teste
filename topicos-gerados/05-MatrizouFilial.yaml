@@ -15,58 +15,51 @@ beginDialog:
               variable: Global.EMatriz
               value: =true
 
-        - id: cond_outros05
-          actions:
-            - kind: Question
-              id: question_matriz
-              interruptionPolicy:
-                allowInterruption: true
+      elseActions:
+        - kind: Question
+          id: question_matriz
+          interruptionPolicy:
+            allowInterruption: true
 
-              variable: init:Topic.respostaMatriz
-              prompt: |-
-                A consulta está sendo formulada pelo estabelecimento **matriz** (CNPJ raiz terminado em 0001-XX) e não por uma filial?
-              entity:
-                kind: EmbeddedEntity
-                definition:
-                  kind: ClosedListEntity
-                  items:
-                    - id: Sim, é a matriz
-                      displayName: Sim, é a matriz
+          variable: init:Topic.respostaMatriz
+          prompt: A consulta está sendo formulada pelo estabelecimento **matriz** (CNPJ raiz terminado em 0001-XX) e não por uma filial?
+          entity:
+            kind: EmbeddedEntity
+            definition:
+              kind: ClosedListEntity
+              items:
+                - id: Sim, é a matriz
+                  displayName: Sim, é a matriz
 
-                    - id: Não, é uma filial
-                      displayName: Não, é uma filial
+                - id: Não, é uma filial
+                  displayName: Não, é uma filial
 
-            - kind: ConditionGroup
-              id: conditionGroup_matriz
-              conditions:
-                - id: cond_eMatriz
-                  condition: =Topic.respostaMatriz = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.05-MatrizouFilial.main.question_matriz'.'Sim, é a matriz'
-                  actions:
-                    - kind: SetVariable
-                      id: setVariable_eMatrizTrue
-                      variable: Global.EMatriz
-                      value: =true
+        - kind: ConditionGroup
+          id: conditionGroup_matriz
+          conditions:
+            - id: cond_eMatriz
+              condition: =Topic.respostaMatriz = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.05-MatrizouFilial.main.question_matriz'.'Sim, é a matriz'
+              actions:
+                - kind: SetVariable
+                  id: setVariable_eMatrizTrue
+                  variable: Global.EMatriz
+                  value: =true
 
-                - id: cond_eFilial
-                  condition: =Topic.respostaMatriz = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.05-MatrizouFilial.main.question_matriz'.'Não, é uma filial'
-                  actions:
-                    - kind: SetVariable
-                      id: setVariable_motivoFilial
-                      variable: Global.MotivoBloqueio
-                      value: ="filial"
+            - id: cond_eFilial
+              condition: =Topic.respostaMatriz = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.05-MatrizouFilial.main.question_matriz'.'Não, é uma filial'
+              actions:
+                - kind: SetVariable
+                  id: setVariable_motivoFilial
+                  variable: Global.MotivoBloqueio
+                  value: ="filial"
 
-                    - kind: SetVariable
-                      id: setVariable_statusFilial
-                      variable: Global.StatusFluxo
-                      value: ="bloqueado_sanavel"
-
-                    - kind: SendActivity
-                      id: debug_filial
-                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
-
-                    - kind: SendActivity
-                      id: placeholder_sanFilial
-                      activity: "[PLACEHOLDER] Aqui entrará o SAN - Matriz ou Filial (filial)"
+                - kind: SetVariable
+                  id: setVariable_statusFilial
+                  variable: Global.StatusFluxo
+                  value: ="bloqueado_sanavel"
+                - kind: BeginDialog
+                  id: VIiloq
+                  dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-MatrizouFilial
 
     - kind: ConditionGroup
       id: conditionGroup_continuar05
@@ -74,13 +67,9 @@ beginDialog:
         - id: cond_fluxoAtivo05
           condition: =Global.StatusFluxo = "iniciado"
           actions:
-            - kind: SendActivity
-              id: debug_final05
-              activity: "[DEBUG] EMatriz:{Global.EMatriz} | StatusFluxo:{Global.StatusFluxo}"
-
-            - kind: SendActivity
-              id: placeholder_topico06
-              activity: "[PLACEHOLDER] Aqui entrará o redirecionamento para 06 - Competência Federal"
+            - kind: BeginDialog
+              id: NetUpZ
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal
 
 inputType: {}
 outputType: {}

@@ -1,0 +1,66 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SendActivity
+      id: msg_bloqFiscTitulo
+      activity: |-
+        🔴 BLOQUEIO INSANÁVEL — FISCALIZAÇÃO OU LITÍGIO EM CURSO
+
+        Consulta formulada quando há procedimento fiscal iniciado, intimação para cumprir obrigação ou litígio (administrativo ou judicial) pendente sobre a mesma matéria é **ineficaz** — e os incisos III, IV e V do art. 27 da IN RFB 2.058/2021 NÃO estão no rol de hipóteses sanáveis do art. 28, parágrafo único.
+
+        ⚠️ CONSEQUÊNCIA PRÁTICA: se protocolada nessas condições, a consulta leva a despacho decisório de ineficácia direta, sem oportunidade de saneamento ou complementação.
+
+    - kind: SendActivity
+      id: msg_bloqFiscRecomendacao
+      activity: |-
+        💡 RECOMENDAÇÃO:
+
+        Aguarde a conclusão do procedimento fiscal ou do litígio antes de formular consulta sobre a mesma matéria. Enquanto isso, use os instrumentos próprios do processo em curso: impugnação, manifestação de inconformidade, recurso voluntário ou embargos.
+
+        ℹ️ EXCEÇÃO: se o consulente readquiriu a espontaneidade nos termos do § 2º do art. 7º do Decreto nº 70.235/1972 (mesmo com a fiscalização ainda não encerrada), a consulta pode ser admitida — nesse caso, informe essa condição expressamente no texto da consulta e refaça esta triagem escolhendo a opção da espontaneidade readquirida.
+
+        📖 Base legal: art. 27, III, IV e V, da IN RFB 2.058/2021.
+    - kind: Question
+      id: question_bloqFiscReiniciar
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaBloqFiscReiniciar
+      prompt: Deseja refazer a triagem (por exemplo, para o caso de espontaneidade readquirida ou para outra consulta)?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, refazer a triagem
+              displayName: Sim, refazer a triagem
+
+            - id: Não, encerrar
+              displayName: Não, encerrar
+
+    - kind: ConditionGroup
+      id: conditionGroup_bloqFiscReiniciar
+      conditions:
+        - id: cond_bloqFiscReiniciarSim
+          condition: =Topic.respostaBloqFiscReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-FiscalizaoemCurso.main.question_bloqFiscReiniciar'.'Sim, refazer a triagem'
+          actions:
+            - kind: BeginDialog
+              id: gq0pij
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.ZZ-InicializadordeVariveis
+
+            - kind: BeginDialog
+              id: hcWkOd
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.00-TipodeConsulta
+
+        - id: cond_bloqFiscEncerrar
+          condition: =Topic.respostaBloqFiscReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-FiscalizaoemCurso.main.question_bloqFiscReiniciar'.'Não, encerrar'
+          actions:
+            - kind: SendActivity
+              id: msg_bloqFiscDespedida
+              activity: Entendido. Concluído o procedimento ou o litígio, volte para refazer a triagem. 👋
+
+inputType: {}
+outputType: {}

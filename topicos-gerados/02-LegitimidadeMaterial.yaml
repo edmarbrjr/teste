@@ -4,6 +4,13 @@ beginDialog:
   id: main
   intent: {}
   actions:
+    - kind: SendActivity
+      id: msg_intro02
+      activity: |-
+        ℹ️ As próximas perguntas se referem ao **CONSULENTE** — a pessoa (física ou jurídica) em cujo nome a consulta será apresentada.
+
+        Se você é contador, advogado ou procurador respondendo por um cliente, responda pensando na situação **do cliente**.
+
     - kind: ConditionGroup
       id: conditionGroup_tipoPessoa02
       conditions:
@@ -17,25 +24,25 @@ beginDialog:
 
               variable: init:Topic.respostaSujeitoPassivo
               prompt: |-
-                Você é sujeito passivo de obrigação tributária (principal ou acessória) relacionada ao fato objeto da consulta?
+                O consulente é sujeito passivo de obrigação tributária (principal ou acessória) relacionada ao fato objeto da consulta?
 
-                (Sujeito passivo é quem tem o dever de pagar o tributo — contribuinte — ou de cumprir obrigações como reter, declarar ou informar — responsável.)
+                (Sujeito passivo é quem tem o dever de pagar o tributo — contribuinte ou responsável — ou de cumprir obrigações como reter, declarar ou informar.)
               entity:
                 kind: EmbeddedEntity
                 definition:
                   kind: ClosedListEntity
                   items:
-                    - id: Sim, sou o sujeito passivo
-                      displayName: Sim, sou o sujeito passivo
+                    - id: Sim, o consulente é o sujeito passivo
+                      displayName: Sim, o consulente é o sujeito passivo
 
-                    - id: Não sou o contribuinte — estou consultando como terceiro
-                      displayName: Não sou o contribuinte — estou consultando como terceiro
+                    - id: Não — o consulente não tem vínculo com o fato
+                      displayName: Não — o consulente não tem vínculo com o fato
 
             - kind: ConditionGroup
               id: conditionGroup_spPfPj
               conditions:
                 - id: cond_spPfPjSim
-                  condition: =Topic.respostaSujeitoPassivo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spPfPj'.'Sim, sou o sujeito passivo'
+                  condition: =Topic.respostaSujeitoPassivo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spPfPj'.'Sim, o consulente é o sujeito passivo'
                   actions:
                     - kind: SetVariable
                       id: setVariable_spPfPjTrue
@@ -43,25 +50,59 @@ beginDialog:
                       value: =true
 
                 - id: cond_spPfPjNao
-                  condition: =Topic.respostaSujeitoPassivo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spPfPj'.'Não sou o contribuinte — estou consultando como terceiro'
+                  condition: =Topic.respostaSujeitoPassivo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spPfPj'.'Não — o consulente não tem vínculo com o fato'
                   actions:
-                    - kind: SetVariable
-                      id: setVariable_motivoNaoSP
-                      variable: Global.MotivoBloqueio
-                      value: ="nao_sujeito_passivo"
+                    - kind: Question
+                      id: question_spConfirma
+                      interruptionPolicy:
+                        allowInterruption: true
 
-                    - kind: SetVariable
-                      id: setVariable_statusNaoSP
-                      variable: Global.StatusFluxo
-                      value: ="bloqueado_insanavel"
+                      variable: init:Topic.respostaSpConfirma
+                      prompt: |-
+                        Só para confirmar: o consulente também **não** é responsável ou substituto tributário, nem tem obrigação acessória (reter na fonte, declarar, prestar informação) relacionada a esse fato?
 
-                    - kind: SendActivity
-                      id: debug_bloqNaoSP
-                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+                        Nesses casos, ele TAMBÉM é sujeito passivo e a consulta é possível.
+                      entity:
+                        kind: EmbeddedEntity
+                        definition:
+                          kind: ClosedListEntity
+                          items:
+                            - id: Confirmo — nenhum vínculo, seria consulta de terceiro
+                              displayName: Confirmo — nenhum vínculo, seria consulta de terceiro
 
-                    - kind: SendActivity
-                      id: placeholder_bloqNaoSP
-                      activity: "[PLACEHOLDER] Aqui entrará o BLOQ - Legitimidade Material (nao_sujeito_passivo)"
+                            - id: Pensando bem, o consulente tem obrigação ligada ao fato
+                              displayName: Pensando bem, o consulente tem obrigação ligada ao fato
+
+                    - kind: ConditionGroup
+                      id: conditionGroup_spConfirma
+                      conditions:
+                        - id: cond_spConfirmaTerceiro
+                          condition: =Topic.respostaSpConfirma = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spConfirma'.'Confirmo — nenhum vínculo, seria consulta de terceiro'
+                          actions:
+                            - kind: SetVariable
+                              id: setVariable_motivoNaoSP
+                              variable: Global.MotivoBloqueio
+                              value: ="nao_sujeito_passivo"
+
+                            - kind: SetVariable
+                              id: setVariable_statusNaoSP
+                              variable: Global.StatusFluxo
+                              value: ="bloqueado_insanavel"
+                            - kind: BeginDialog
+                              id: redirect_bloqNaoSP
+                              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-LegitimidadeMaterial
+
+                        - id: cond_spConfirmaVinculo
+                          condition: =Topic.respostaSpConfirma = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial.main.question_spConfirma'.'Pensando bem, o consulente tem obrigação ligada ao fato'
+                          actions:
+                            - kind: SetVariable
+                              id: setVariable_spVinculoTrue
+                              variable: Global.SujeitoPassivo
+                              value: =true
+
+                            - kind: SendActivity
+                              id: msg_spVinculo
+                              activity: ✔️ Então o consulente é sujeito passivo (na condição de responsável ou por obrigação acessória) — a triagem pode continuar. Na consulta, descreva esse vínculo com o fato.
 
         - id: cond_orgao
           condition: =Global.TipoPessoa = "orgao"
@@ -72,7 +113,7 @@ beginDialog:
                 allowInterruption: true
 
               variable: init:Topic.respostaOrgao
-              prompt: O órgão público é sujeito passivo da obrigação tributária em questão (por exemplo, como responsável por retenção na fonte), ou a consulta versa sobre situação em que ele não figura como sujeito passivo?
+              prompt: O órgão público consulente é sujeito passivo da obrigação tributária em questão (por exemplo, como responsável por retenção na fonte), ou a consulta versa sobre situação em que ele não figura como sujeito passivo?
               entity:
                 kind: EmbeddedEntity
                 definition:
@@ -166,14 +207,9 @@ beginDialog:
                       id: setVariable_statusEntSemAut
                       variable: Global.StatusFluxo
                       value: ="bloqueado_insanavel"
-
-                    - kind: SendActivity
-                      id: debug_bloqEntSemAut
-                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
-
-                    - kind: SendActivity
-                      id: placeholder_bloqEntSemAut
-                      activity: "[PLACEHOLDER] Aqui entrará o BLOQ - Legitimidade Material (entidade_sem_autorizacao)"
+                    - kind: BeginDialog
+                      id: redirect_bloqEntSemAut
+                      dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-LegitimidadeMaterial
 
     - kind: ConditionGroup
       id: conditionGroup_continuar02
@@ -181,10 +217,6 @@ beginDialog:
         - id: cond_fluxoAtivo02
           condition: =Global.StatusFluxo = "iniciado"
           actions:
-            - kind: SendActivity
-              id: debug_final02
-              activity: "[DEBUG] SujeitoPassivo:{Global.SujeitoPassivo} | StatusFluxo:{Global.StatusFluxo}"
-
             - kind: BeginDialog
               id: redirect_topico03
               dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.03-QuemProtocola

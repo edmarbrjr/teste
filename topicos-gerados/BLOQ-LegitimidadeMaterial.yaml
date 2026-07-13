@@ -1,0 +1,91 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SendActivity
+      id: msg_bloqLegTitulo
+      activity: 🔴 FALTA DE LEGITIMIDADE
+
+    - kind: ConditionGroup
+      id: conditionGroup_bloqLegMotivo
+      conditions:
+        - id: cond_bloqPfNbs
+          condition: =Global.MotivoBloqueio = "pf_nbs"
+          actions:
+            - kind: SendActivity
+              id: msg_bloqPfNbs
+              activity: A consulta sobre classificação NBS (Anexo III) só pode ser formulada por **pessoa jurídica** sujeito passivo. Pessoa física não tem legitimidade para esse tipo específico de consulta.
+
+        - id: cond_bloqNaoSujeitoPassivo
+          condition: =Global.MotivoBloqueio = "nao_sujeito_passivo"
+          actions:
+            - kind: SendActivity
+              id: msg_bloqNaoSujeitoPassivo
+              activity: |-
+                Somente podem formular consulta à RFB:
+
+                I - o sujeito passivo da obrigação tributária (principal ou acessória);
+                II - órgão da administração pública;
+                III - entidade representativa de categoria econômica ou profissional (com autorização expressa dos associados/filiados).
+
+                Quem não se enquadra em nenhuma dessas categorias não tem direito de formular consulta — é questão de legitimidade ativa, sem correção possível.
+
+        - id: cond_bloqEntidadeSemAut
+          condition: =Global.MotivoBloqueio = "entidade_sem_autorizacao"
+          actions:
+            - kind: SendActivity
+              id: msg_bloqEntidadeSemAut
+              activity: Entidade representativa pode consultar em nome dos associados APENAS com **autorização expressa** deles, em estatuto ou documento individual ou coletivo (art. 2º, § 3º, da IN RFB 2.058/2021). Sem essa autorização, falta legitimidade.
+
+      elseActions:
+    - kind: SendActivity
+      id: msg_bloqLegConsequencia
+      activity: |-
+        ⚠️ CONSEQUÊNCIA PRÁTICA:
+
+        Se protocolada mesmo assim, a consulta será declarada **ineficaz**, sem oportunidade de saneamento — não há correção possível porque falta o próprio direito de consultar.
+
+        📖 Base legal: art. 2º da IN RFB 2.058/2021.
+    - kind: Question
+      id: question_bloqLegReiniciar
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaBloqLegReiniciar
+      prompt: Deseja reiniciar a triagem para verificar outra situação (por exemplo, no papel de outro consulente)?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, reiniciar a triagem
+              displayName: Sim, reiniciar a triagem
+
+            - id: Não, encerrar
+              displayName: Não, encerrar
+
+    - kind: ConditionGroup
+      id: conditionGroup_bloqLegReiniciar
+      conditions:
+        - id: cond_bloqLegReiniciarSim
+          condition: =Topic.respostaBloqLegReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-LegitimidadeMaterial.main.question_bloqLegReiniciar'.'Sim, reiniciar a triagem'
+          actions:
+            - kind: BeginDialog
+              id: mGwiwj
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.ZZ-InicializadordeVariveis
+
+            - kind: BeginDialog
+              id: GnsPZg
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.00-TipodeConsulta
+
+        - id: cond_bloqLegEncerrar
+          condition: =Topic.respostaBloqLegReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-LegitimidadeMaterial.main.question_bloqLegReiniciar'.'Não, encerrar'
+          actions:
+            - kind: SendActivity
+              id: msg_bloqLegDespedida
+              activity: Entendido. Se a situação mudar, volte aqui para refazer a triagem. 👋
+
+inputType: {}
+outputType: {}

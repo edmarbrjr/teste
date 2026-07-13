@@ -1,0 +1,97 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SendActivity
+      id: msg_sanCompTitulo
+      activity: 🟡 TRIBUTO FORA DA COMPETÊNCIA DA RECEITA FEDERAL
+
+    - kind: ConditionGroup
+      id: conditionGroup_sanCompMotivo
+      conditions:
+        - id: cond_sanIcms
+          condition: =Global.MotivoBloqueio = "icms"
+          actions:
+            - kind: SendActivity
+              id: msg_sanIcms
+              activity: |-
+                O ICMS é tributo ESTADUAL, da competência da Secretaria da Fazenda (SEFAZ) do seu estado. A RFB não responde consulta sobre ICMS — a matéria é estranha à legislação tributária federal.
+
+                ✅ CAMINHO CORRETO: formule a consulta na SEFAZ do seu estado, pela via própria do fisco estadual.
+
+        - id: cond_sanIss
+          condition: =Global.MotivoBloqueio = "iss"
+          actions:
+            - kind: SendActivity
+              id: msg_sanIss
+              activity: |-
+                O ISS é tributo MUNICIPAL, da competência da Secretaria de Finanças do seu município. A RFB não responde consulta sobre ISS.
+
+                ✅ CAMINHO CORRETO: formule a consulta na Secretaria de Finanças (ou Fazenda) do seu município.
+
+        - id: cond_sanIbs
+          condition: =Global.MotivoBloqueio = "ibs"
+          actions:
+            - kind: SendActivity
+              id: msg_sanIbs
+              activity: |-
+                O IBS (Imposto sobre Bens e Serviços, da reforma tributária — LC 214/2025) é administrado pelo **Comitê Gestor do IBS**, não pela Receita Federal.
+
+                ✅ CAMINHO CORRETO: formule a consulta pelo canal próprio do Comitê Gestor do IBS: cgibs.gov.br
+
+                ℹ️ Se a sua operação também envolve a CBS, a parte da CBS PODE ser consultada na RFB — refaça a triagem escolhendo a opção da CBS.
+
+      elseActions:
+    - kind: SendActivity
+      id: msg_sanCompExplicacao
+      activity: |-
+        🔴 **TRIBUTO FORA DA COMPETÊNCIA DA RECEITA FEDERAL**
+
+        A sua consulta trata de matéria estranha à legislação tributária federal. Como a Receita Federal não possui competência legal para se manifestar sobre a legislação de outros entes federativos, não é possível processar este pedido.
+
+        💡 **Operações com Múltiplos Tributos:**Se a sua operação envolve tributos federais e **estaduais ou municipais** (ex.: PIS/COFINS e ICMS), formule duas consultas separadas: uma à RFB (restrita à parte federal) e outra ao fisco competente.
+
+        📖 **Base legal:** art. 1º e art. 27, XIII, da IN RFB 2.058/2021.
+    - kind: Question
+      id: question_sanCompReiniciar
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaSanCompReiniciar
+      prompt: Deseja iniciar uma nova triagem focada **apenas** nos tributos de competência federal da sua dúvida?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, refazer a triagem
+              displayName: Sim, refazer a triagem
+
+            - id: Não, encerrar
+              displayName: Não, encerrar
+
+    - kind: ConditionGroup
+      id: conditionGroup_sanCompReiniciar
+      conditions:
+        - id: cond_sanCompReiniciarSim
+          condition: =Topic.respostaSanCompReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-CompetnciaErrada.main.question_sanCompReiniciar'.'Sim, refazer a triagem'
+          actions:
+            - kind: BeginDialog
+              id: ACFPhU
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.ZZ-InicializadordeVariveis
+
+            - kind: BeginDialog
+              id: qPEk7p
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.00-TipodeConsulta
+
+        - id: cond_sanCompEncerrar
+          condition: =Topic.respostaSanCompReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-CompetnciaErrada.main.question_sanCompReiniciar'.'Não, encerrar'
+          actions:
+            - kind: SendActivity
+              id: msg_sanCompDespedida
+              activity: Entendido. Boa sorte com a consulta no fisco competente! 👋
+
+inputType: {}
+outputType: {}

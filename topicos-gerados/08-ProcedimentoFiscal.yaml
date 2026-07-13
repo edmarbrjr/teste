@@ -1,0 +1,86 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: Question
+      id: question_fiscalizacao
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaFiscalizacao
+      prompt: |-
+        Sobre a matéria da sua consulta, existe ATUALMENTE algum dos procedimentos abaixo em curso?
+        🔎 **Fiscalização:** Procedimento fiscal já iniciado
+
+        📄 **Exigência:** Auto de infração ou intimação para cumprir obrigação
+
+        🏛️ **Processo Administrativo:** Litígio pendente (ex.: DRJ, CARF)
+
+        ⚖️ **Ação Judicial:** Processo pendente na Justiça em que você é parte
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Não há nenhum desses em curso
+              displayName: Não há nenhum desses em curso
+
+            - id: Sim, há algum Procedimento fiscal em curso sobre a mesma matéria
+              displayName: Sim, há algum Procedimento fiscal em curso sobre a mesma matéria
+
+            - id: Havia fiscalização, mas readquiri a espontaneidade
+              displayName: Havia fiscalização, mas readquiri a espontaneidade
+
+    - kind: ConditionGroup
+      id: conditionGroup_fiscalizacao
+      conditions:
+        - id: cond_semFiscalizacao
+          condition: =Topic.respostaFiscalizacao = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.08-ProcedimentoFiscal.main.question_fiscalizacao'.'Não há nenhum desses em curso'
+          actions:
+            - kind: SetVariable
+              id: setVariable_semFiscalizacao
+              variable: Global.SemFiscalizacao
+              value: =true
+
+        - id: cond_fiscalizacaoEmCurso
+          condition: =Topic.respostaFiscalizacao = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.08-ProcedimentoFiscal.main.question_fiscalizacao'.'Sim, há algum Procedimento fiscal em curso sobre a mesma matéria'
+          actions:
+            - kind: SetVariable
+              id: setVariable_motivoFiscalizacao
+              variable: Global.MotivoBloqueio
+              value: ="fiscalizacao_em_curso"
+
+            - kind: SetVariable
+              id: setVariable_statusFiscalizacao
+              variable: Global.StatusFluxo
+              value: ="bloqueado_insanavel"
+            - kind: BeginDialog
+              id: 6TcjkS
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-FiscalizaoemCurso
+
+        - id: cond_espontaneidade
+          condition: =Topic.respostaFiscalizacao = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.08-ProcedimentoFiscal.main.question_fiscalizacao'.'Havia fiscalização, mas readquiri a espontaneidade'
+          actions:
+            - kind: SetVariable
+              id: setVariable_semFiscalizacaoEspont
+              variable: Global.SemFiscalizacao
+              value: =true
+
+            - kind: SendActivity
+              id: aviso_espontaneidade
+              activity: ⚠️ Situação excepcional aceita pelo § 2º do art. 27 da IN RFB 2.058/2021 (espontaneidade readquirida — § 2º do art. 7º do Decreto 70.235/1972). Informe essa condição expressamente na própria consulta.
+
+    - kind: ConditionGroup
+      id: conditionGroup_continuar08
+      conditions:
+        - id: cond_fluxoAtivo08
+          condition: =Global.StatusFluxo = "iniciado"
+          actions:
+            - kind: BeginDialog
+              id: uxCFkY
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.09-DecisoAnterior
+
+inputType: {}
+outputType: {}

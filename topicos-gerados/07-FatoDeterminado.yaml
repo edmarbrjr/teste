@@ -1,0 +1,72 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: Question
+      id: question_fato
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaFato
+      prompt: |-
+        A dúvida diz respeito a um fato CONCRETO e DETERMINADO?
+
+        Ou seja:
+        ✔️ Um fato que JÁ OCORREU — descrito em detalhes, com data, valores, partes envolvidas etc.; OU
+        ✔️ Um fato que AINDA VAI OCORRER — mas com efetiva possibilidade de ocorrência demonstrada e vinculação do consulente ao fato
+
+        Isso é diferente de:
+        ❌ Uma pergunta em tese ("como funciona o regime X?")
+        ❌ Uma hipótese genérica sem amarração com sua situação concreta
+        ❌ Curiosidade sobre situação com a qual você não tem ligação
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, é um fato concreto e determinado
+              displayName: Sim, é um fato concreto e determinado
+
+            - id: É uma hipótese ou fato genérico
+              displayName: É uma hipótese ou fato genérico
+
+    - kind: ConditionGroup
+      id: conditionGroup_fato
+      conditions:
+        - id: cond_fatoDeterminado
+          condition: =Topic.respostaFato = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.07-FatoDeterminado.main.question_fato'.'Sim, é um fato concreto e determinado'
+          actions:
+            - kind: SetVariable
+              id: setVariable_fatoDeterminado
+              variable: Global.FatoDeterminado
+              value: =true
+
+        - id: cond_fatoGenerico
+          condition: =Topic.respostaFato = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.07-FatoDeterminado.main.question_fato'.'É uma hipótese ou fato genérico'
+          actions:
+            - kind: SetVariable
+              id: setVariable_motivoFatoGenerico
+              variable: Global.MotivoBloqueio
+              value: ="fato_generico"
+
+            - kind: SetVariable
+              id: setVariable_statusFatoGenerico
+              variable: Global.StatusFluxo
+              value: ="bloqueado_sanavel"
+            - kind: BeginDialog
+              id: dvvtIc
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-FatoGenrico
+
+    - kind: ConditionGroup
+      id: conditionGroup_continuar07
+      conditions:
+        - id: cond_fluxoAtivo07
+          condition: =Global.StatusFluxo = "iniciado"
+          actions:
+            - kind: BeginDialog
+              id: XgJO83
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.08-ProcedimentoFiscal
+inputType: {}
+outputType: {}

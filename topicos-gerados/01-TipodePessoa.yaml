@@ -51,14 +51,9 @@ beginDialog:
                       id: setVariable_statusPfNbs
                       variable: Global.StatusFluxo
                       value: ="bloqueado_insanavel"
-
-                    - kind: SendActivity
-                      id: debug_bloqPfNbs
-                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
-
-                    - kind: SendActivity
-                      id: sendActivity_J9qujL
-                      activity: "[PLACEHOLDER] Aqui entrará o BLOQ - Legitimidade Material (pf_nbs)"
+                    - kind: BeginDialog
+                      id: aGvpMg
+                      dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-LegitimidadeMaterial
 
       elseActions:
         - kind: Question
@@ -127,10 +122,6 @@ beginDialog:
         - id: cond_fluxoAtivo01
           condition: =Global.StatusFluxo = "iniciado"
           actions:
-            - kind: SendActivity
-              id: sendActivity_jyFCaL
-              activity: "[DEBUG] TipoPessoa:{Global.TipoPessoa}"
-
             - kind: BeginDialog
               id: KN0kY6
               dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial
