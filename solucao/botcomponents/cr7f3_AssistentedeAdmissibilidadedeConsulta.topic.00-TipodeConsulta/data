@@ -1,0 +1,65 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: Question
+      id: question_MHCFmy
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaTipoConsulta
+      prompt: |-
+        Para começar, me diga que tipo de consulta você deseja formular: 
+
+        **Interpretação da legislação tributária** (dúvida sobre como uma norma se aplica ao seu caso), ou
+
+         **Classificação de serviço, intangível ou operação** (dúvida sobre código NBS)
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Interpretação da legislação
+              displayName: Interpretação da legislação
+
+            - id: Classificação NBS
+              displayName: Classificação NBS
+
+    - kind: ConditionGroup
+      id: conditionGroup_qJrVJj
+      conditions:
+        - id: conditionItem_6UYQJZ
+          condition: =Topic.respostaTipoConsulta = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.00-TipodeConsulta.main.question_MHCFmy'.'Interpretação da legislação'
+          actions:
+            - kind: SetVariable
+              id: setVariable_QpqldK
+              variable: Global.TipoConsulta
+              value: ="interpretacao"
+
+            - kind: SendActivity
+              id: sendActivity_JI1NeF
+              activity: DEBUG] Ramo Interpretação — TipoConsulta:{Global.TipoConsulta}
+
+            - kind: BeginDialog
+              id: HJNkxz
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.01-TipodePessoa
+
+        - id: conditionItem_Z8AN9S
+          condition: =Topic.respostaTipoConsulta = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.00-TipodeConsulta.main.question_MHCFmy'.'Classificação NBS'
+          actions:
+            - kind: SetVariable
+              id: setVariable_72oqFu
+              variable: Global.TipoConsulta
+              value: ="nbs"
+
+            - kind: SendActivity
+              id: sendActivity_n5uwxZ
+              activity: "[DEBUG] Ramo NBS — TipoConsulta:{Global.TipoConsulta}"
+
+            - kind: BeginDialog
+              id: rutpr1
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.01-TipodePessoa
+
+inputType: {}
+outputType: {}

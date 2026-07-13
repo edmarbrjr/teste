@@ -1,0 +1,11 @@
+<botcomponent schemaname="cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.Fallback">
+  <componenttype>9</componenttype>
+  <description>Esse tópico do sistema é disparado quando o enunciado do usuário não corresponde aos tópicos existentes.</description>
+  <iscustomizable>0</iscustomizable>
+  <name>Fallback</name>
+  <parentbotid>
+    <schemaname>cr7f3_AssistentedeAdmissibilidadedeConsulta</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

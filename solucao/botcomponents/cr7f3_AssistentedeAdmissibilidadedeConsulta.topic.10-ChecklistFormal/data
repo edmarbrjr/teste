@@ -1,0 +1,141 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SendActivity
+      id: msg_intro10
+      activity: |-
+        Excelente! Você passou por todos os filtros materiais de admissibilidade. 🎉
+
+        Agora vamos conferir se o documento da consulta (anexo correto) está completo. Confira item por item antes de responder:
+
+    - kind: ConditionGroup
+      id: conditionGroup_anexo10
+      conditions:
+        - id: cond_nbs10
+          condition: =Global.TipoConsulta = "nbs"
+          actions:
+            - kind: SendActivity
+              id: msg_checklistNBS
+              activity: |-
+                📋 CHECKLIST — ANEXO III (Classificação NBS):
+
+                1. Nome empresarial, CNPJ, endereço completo, telefone e e-mail preenchidos
+                2. Caixa Postal Eletrônica (DTE) informada
+                3. Representante legal ou procurador identificado, com contrato social/ata/estatuto ou procuração em anexo
+                4. Pesquisa prévia feita na NBS, nas NEBS e nas ementas publicadas no DOU — e a dúvida razoável persiste
+                5. Seção II — descrição detalhada do serviço, intangível ou operação
+                6. Classificação ADOTADA e PRETENDIDA indicadas, com os critérios utilizados
+                7. Enquadramento na legislação do ICMS ou ISSQN, se for o caso
+                8. Seção III — fundamentação legal (dispositivos que ensejaram a consulta)
+                9. Seção IV — questionamentos numerados objetivamente
+                10. A consulta versa sobre UM ÚNICO serviço, intangível ou operação
+                11. Documentos em língua estrangeira acompanhados de tradução + declaração final (itens a, b, c) + local, data e assinatura
+
+        - id: cond_pf10
+          condition: =Global.TipoPessoa = "pf"
+          actions:
+            - kind: SendActivity
+              id: msg_checklistPF
+              activity: |-
+                📋 CHECKLIST — ANEXO I (Pessoa Física):
+
+                1. Nome completo, CPF, endereço, telefone e e-mail preenchidos
+                2. Caixa Postal Eletrônica (DTE) informada
+                3. Seção I — descrição detalhada do fato concreto (não genérica)
+                4. Seção II — dispositivos legais que motivaram a consulta indicados
+                5. Seção III — questionamentos numerados objetivamente
+                6. Declaração final com os itens a, b e c (art. 14 da IN RFB 2.058/2021)
+                7. Assinatura eletrônica qualificada/avançada (ou manual + documento de identidade)
+                8. A consulta versa sobre um único tributo (ou matérias conexas)
+                9. Questionário "Associar Alegações" preenchido no e-CAC
+
+      elseActions:
+        - kind: SendActivity
+          id: msg_checklistPJ
+          activity: |-
+            📋 CHECKLIST — ANEXO II (Pessoa Jurídica):
+
+            1. Nome empresarial, CNPJ, endereço completo, telefone e e-mail preenchidos
+            2. Representante legal ou procurador identificado, com documento de identidade
+            3. Contrato social, ata/estatuto ou procuração em anexo
+            4. Seção I — descrição detalhada da questão (fato concreto, não genérico)
+            5. Seção II — fundamentação legal (dispositivos que ensejaram a consulta)
+            6. Seção III — questionamentos numerados objetivamente
+            7. Seção IV — requisitos específicos preenchida, SE a consulta envolver preços de transferência, Padis ou estabelecimento permanente (art. 15)
+            8. Declaração final com os itens a, b e c
+            9. Local, data e assinatura do representante legal ou procurador
+            10. A consulta versa sobre um único tributo + questionário "Associar Alegações" no e-CAC
+
+    - kind: Question
+      id: question_checklist
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaChecklist
+      prompt: Todos os itens do checklist acima estão completos?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, todos os itens estão completos
+              displayName: Sim, todos os itens estão completos
+
+            - id: Não — ainda há itens pendentes
+              displayName: Não — ainda há itens pendentes
+
+    - kind: ConditionGroup
+      id: conditionGroup_checklist
+      conditions:
+        - id: cond_checklistOk
+          condition: =Topic.respostaChecklist = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.10-ChecklistFormal.main.question_checklist'.'Sim, todos os itens estão completos'
+          actions:
+            - kind: SendActivity
+              id: debug_checklistOk
+              activity: "[DEBUG] Checklist completo | StatusFluxo:{Global.StatusFluxo}"
+
+        - id: cond_checklistPendente
+          condition: =Topic.respostaChecklist = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.10-ChecklistFormal.main.question_checklist'.'Não — ainda há itens pendentes'
+          actions:
+            - kind: SetVariable
+              id: setVariable_motivoChecklist
+              variable: Global.MotivoBloqueio
+              value: ="checklist_incompleto"
+
+            - kind: SetVariable
+              id: setVariable_statusChecklist
+              variable: Global.StatusFluxo
+              value: ="bloqueado_sanavel"
+
+            - kind: SendActivity
+              id: msg_checklistPendente
+              activity: |-
+                🟡 Antes de protocolar, complete os itens pendentes.
+
+                Protocolar com o anexo incompleto pode gerar intimação para complementar (atrasando a solução) ou até a ineficácia da consulta.
+
+                Quando terminar de preencher, reinicie esta triagem para conferir tudo de novo.
+
+            - kind: SendActivity
+              id: debug_checklistPendente
+              activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+    - kind: ConditionGroup
+      id: conditionGroup_continuar10
+      conditions:
+        - id: cond_fluxoAtivo10
+          condition: =Global.StatusFluxo = "iniciado"
+          actions:
+            - kind: BeginDialog
+              id: jjGQz3
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.IM-AptoparaProtocolo
+
+      elseActions:
+        - kind: EndConversation
+          id: NwOwn9
+
+inputType: {}
+outputType: {}

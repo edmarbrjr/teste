@@ -1,0 +1,12 @@
+<botcomponent schemaname="cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.EndofConversation">
+  <componenttype>9</componenttype>
+  <description>Esse tópico do sistema é disparado apenas por uma ação de redirecionamento,
+e guia o usuário para classificar a conversa com o agente.</description>
+  <iscustomizable>0</iscustomizable>
+  <name>Fim da conversa</name>
+  <parentbotid>
+    <schemaname>cr7f3_AssistentedeAdmissibilidadedeConsulta</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

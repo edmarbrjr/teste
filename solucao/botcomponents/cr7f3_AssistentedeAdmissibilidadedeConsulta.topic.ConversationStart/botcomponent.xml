@@ -1,0 +1,11 @@
+<botcomponent schemaname="cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.ConversationStart">
+  <componenttype>9</componenttype>
+  <description>Esse tópico do sistema é disparado quando o agente recebe uma Atividade que indica o início de uma nova conversa. Se você não quiser que o agente inicie a conversa, desabilite esse tópico.</description>
+  <iscustomizable>0</iscustomizable>
+  <name>Início da conversa</name>
+  <parentbotid>
+    <schemaname>cr7f3_AssistentedeAdmissibilidadedeConsulta</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

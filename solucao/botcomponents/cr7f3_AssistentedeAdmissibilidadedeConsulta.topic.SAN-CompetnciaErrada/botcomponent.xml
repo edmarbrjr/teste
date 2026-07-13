@@ -1,0 +1,10 @@
+<botcomponent schemaname="cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-CompetnciaErrada">
+  <componenttype>9</componenttype>
+  <iscustomizable>0</iscustomizable>
+  <name>SAN - Competência Errada</name>
+  <parentbotid>
+    <schemaname>cr7f3_AssistentedeAdmissibilidadedeConsulta</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

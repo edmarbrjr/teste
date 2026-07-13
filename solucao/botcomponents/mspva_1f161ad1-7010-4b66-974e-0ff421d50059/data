@@ -1,0 +1,87 @@
+kind: MultiTurnEvaluationCase
+source: Manual
+activities:
+  - activity:
+      value:
+        from:
+          role: user
+
+      text:
+        - Interpretação da legislação
+
+  - activity:
+      value:
+        from:
+          role: agent
+
+      text:
+        - |-
+          DEBUG] Ramo Interpretação — TipoConsulta:interpretacao
+          Quem é o consulente, ou seja, quem formulará a consulta?
+
+  - activity:
+      value:
+        from:
+          role: user
+
+      text:
+        - Pessoa Jurídica
+
+  - activity:
+      value:
+        from:
+          role: agent
+
+      text:
+        - |-
+          [DEBUG] TipoPessoa:pj
+          Você é sujeito passivo de obrigação tributária (principal ou acessória) relacionada ao fato objeto da consulta?
+
+          (Sujeito passivo é quem tem o dever de pagar o tributo — contribuinte — ou de cumprir obrigações como reter, declarar ou informar — responsável.)
+
+  - activity:
+      value:
+        from:
+          role: user
+
+      text:
+        - Sim, sou o sujeito passivo
+
+  - activity:
+      value:
+        from:
+          role: agent
+
+      text:
+        - |-
+          [DEBUG] SujeitoPassivo:Sim | StatusFluxo:iniciado
+          ⚠️ REGRA FUNDAMENTAL — leia com atenção:
+
+          O processo digital de consulta deve ser OBRIGATORIAMENTE aberto no CPF/CNPJ do sujeito passivo (contribuinte consulente).
+
+          Isso vale MESMO quando o contribuinte é representado por procurador: o procurador (contador, advogado, escritório) usa sua própria identidade digital para ACESSAR o e-CAC, mas o processo é aberto em nome do contribuinte por meio da funcionalidade "Alterar perfil de acesso".
+
+          ❌ ERRADO: contador abre o processo no CPF/CNPJ DELE MESMO
+          ✔️ CORRETO: contador acessa o e-CAC → "Alterar perfil de acesso" → seleciona o perfil "Procurador de PF" ou "Procurador de PJ" → abre o processo NO NOME DO CONTRIBUINTE
+          Considerando essa regra, qual é a situação?
+
+  - activity:
+      value:
+        from:
+          role: user
+
+      text:
+        - Contador COM procuração, mas abriria o processo no CNPJ dele mesmo
+
+  - activity:
+      value:
+        from:
+          role: agent
+
+      text:
+        - |-
+          [DEBUG] StatusFluxo:bloqueado_insanavel | MotivoBloqueio:terceiro_nome_proprio
+          [PLACEHOLDER] Aqui entrará o BLOQ - Processo Nome Terceiro (terceiro_nome_proprio)
+
+extensionData:
+  displayOrder: "1783865699296"

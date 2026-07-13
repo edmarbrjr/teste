@@ -1,0 +1,10 @@
+<botcomponent schemaname="cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-MatrizouFilial">
+  <componenttype>9</componenttype>
+  <iscustomizable>0</iscustomizable>
+  <name>SAN - Matriz ou Filial</name>
+  <parentbotid>
+    <schemaname>cr7f3_AssistentedeAdmissibilidadedeConsulta</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

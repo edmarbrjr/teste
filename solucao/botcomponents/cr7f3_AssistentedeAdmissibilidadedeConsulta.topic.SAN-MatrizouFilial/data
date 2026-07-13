@@ -1,0 +1,79 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SendActivity
+      id: msg_sanFilial
+      activity: |-
+        🟡 REQUISITO PENDENTE — CONSULTA DEVE SER DA MATRIZ
+
+        A consulta da pessoa jurídica deve ser formulada pelo **estabelecimento matriz** (CNPJ raiz terminado em 0001-XX). Formulada por filial, a consulta fica sujeita a não ter seus efeitos reconhecidos ou a exigências que atrasam a solução. **Não protocole pela filial.**
+
+        ✅ CAMINHO CORRETO: o processo deve ser aberto no CNPJ da MATRIZ, pelo representante legal ou por procurador com procuração eletrônica RFB da matriz (via "Alterar perfil de acesso").
+
+        ℹ️ Os efeitos da solução de consulta alcançam todos os estabelecimentos da PJ — não é necessário (nem cabível) uma consulta por filial.
+
+        📖 Base legal: IN RFB 2.058/2021 [CONFERIR dispositivo exato com a Cosit antes da homologação].
+
+    - kind: SendActivity
+      id: debug_sanFilial
+      activity: "[DEBUG] SAN Filial exibido | MotivoBloqueio:{Global.MotivoBloqueio} | StatusFluxo:{Global.StatusFluxo}"
+
+    - kind: Question
+      id: question_sanFilialContinuar
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaSanFilialContinuar
+      prompt: A consulta será formulada pela matriz? Se sim, a triagem pode continuar.
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, a matriz assumirá a consulta — continuar
+              displayName: Sim, a matriz assumirá a consulta — continuar
+
+            - id: Vou providenciar depois — encerrar
+              displayName: Vou providenciar depois — encerrar
+
+    - kind: ConditionGroup
+      id: conditionGroup_sanFilialContinuar
+      conditions:
+        - id: cond_sanFilialContinuarSim
+          condition: =Topic.respostaSanFilialContinuar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-MatrizouFilial.main.question_sanFilialContinuar'.'Sim, a matriz assumirá a consulta — continuar'
+          actions:
+            - kind: SetVariable
+              id: setVariable_sanFilialEMatriz
+              variable: Global.EMatriz
+              value: =true
+
+            - kind: SetVariable
+              id: setVariable_sanFilialStatus
+              variable: Global.StatusFluxo
+              value: ="iniciado"
+
+            - kind: SetVariable
+              id: setVariable_sanFilialMotivo
+              variable: Global.MotivoBloqueio
+              value: =""
+
+            - kind: SendActivity
+              id: debug_sanFilialRetomada
+              activity: "[DEBUG] Retomada matriz → EMatriz:{Global.EMatriz} | StatusFluxo:{Global.StatusFluxo}"
+
+            - kind: BeginDialog
+              id: redirect_sanFilial06
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal
+
+        - id: cond_sanFilialEncerrar
+          condition: =Topic.respostaSanFilialContinuar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-MatrizouFilial.main.question_sanFilialContinuar'.'Vou providenciar depois — encerrar'
+          actions:
+            - kind: SendActivity
+              id: msg_sanFilialDespedida
+              activity: Combinado. Alinhe com a matriz e volte para concluir a triagem. 👋
+
+inputType: {}
+outputType: {}

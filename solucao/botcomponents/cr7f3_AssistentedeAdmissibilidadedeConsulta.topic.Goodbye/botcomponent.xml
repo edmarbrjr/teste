@@ -1,0 +1,11 @@
+<botcomponent schemaname="cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.Goodbye">
+  <componenttype>9</componenttype>
+  <description>Esse tópico é disparado quando o usuário se despede. Por padrão, ele não termina a conversa. Se você quiser terminar a conversa quando o usuário se despedir, adicione uma ação de "Término da Conversa" a esse tópico ou redirecione para o tópico do sistema "Término da Conversa".</description>
+  <iscustomizable>0</iscustomizable>
+  <name>Tchau</name>
+  <parentbotid>
+    <schemaname>cr7f3_AssistentedeAdmissibilidadedeConsulta</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

@@ -1,0 +1,44 @@
+kind: AdaptiveDialog
+startBehavior: CancelOtherTopics
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent:
+    displayName: Tchau
+    includeInOnSelectIntent: false
+    triggerQueries:
+      - Tchau
+      - Tchau, agradeço mais uma vez
+      - Tchau, agradeço novamente
+      - Tchau, obrigado mais uma vez
+      - Tchau, obrigado novamente
+      - Tchau, obrigada mais uma vez
+      - Tchau, obrigada novamente
+      - Até mais
+      - Não, obrigado. Tchau.
+      - Não, obrigada. Tchau.
+      - Até logo
+
+  actions:
+    - kind: Question
+      id: question_zf2HhP
+      variable: Topic.EndConversation
+      prompt: Gostaria de encerrar nossa conversa?
+      entity: BooleanPrebuiltEntity
+
+    - kind: ConditionGroup
+      id: condition_DGc1Wy
+      conditions:
+        - id: condition_DGc1Wy-item-0
+          condition: =Topic.EndConversation = true
+          actions:
+            - kind: BeginDialog
+              id: dn94DC
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.EndofConversation
+
+        - id: condition_DGc1Wy-item-1
+          condition: =Topic.EndConversation = false
+          actions:
+            - kind: SendActivity
+              id: sendMessage_LdLhmf
+              activity: Pode falar. Estou escutando.

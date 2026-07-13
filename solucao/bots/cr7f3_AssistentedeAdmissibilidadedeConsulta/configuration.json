@@ -1,0 +1,19 @@
+{
+  "$kind": "BotConfiguration",
+  "settings": {
+    "GenerativeActionsEnabled": false
+  },
+  "isAgentConnectable": false,
+  "gPTSettings": {
+    "$kind": "GPTSettings",
+    "defaultSchemaName": "cr7f3_AssistentedeAdmissibilidadedeConsulta.gpt.default"
+  },
+  "aISettings": {
+    "$kind": "AISettings",
+    "useModelKnowledge": false,
+    "isFileAnalysisEnabled": false,
+    "isSemanticSearchEnabled": true,
+    "contentModeration": "Low",
+    "optInUseLatestModels": false
+  }
+}

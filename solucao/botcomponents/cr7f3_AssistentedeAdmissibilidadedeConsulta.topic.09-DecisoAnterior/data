@@ -1,0 +1,126 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: Question
+      id: question_decisao
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaDecisao
+      prompt: |-
+        Sobre esse mesmo tema, há alguma dessas situações?
+
+        • Decisão anterior em consulta ou litígio (DRJ, CARF) em que você foi parte, ainda não modificada por ato superveniente
+        • Fato disciplinado em ato normativo publicado antes da apresentação da consulta
+        • Fato definido em disposição literal de lei
+        • Questão sobre constitucionalidade ou legalidade da norma tributária
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Não — nenhuma dessas situações
+              displayName: Não — nenhuma dessas situações
+
+            - id: Sim, já há decisão anterior não modificada sobre mim
+              displayName: Sim, já há decisão anterior não modificada sobre mim
+
+            - id: Sim, a matéria já está em ato normativo ou lei literal
+              displayName: Sim, a matéria já está em ato normativo ou lei literal
+
+            - id: Minha dúvida é sobre constitucionalidade/legalidade
+              displayName: Minha dúvida é sobre constitucionalidade/legalidade
+
+    - kind: ConditionGroup
+      id: conditionGroup_decisao
+      conditions:
+        - id: cond_semDecisao
+          condition: =Topic.respostaDecisao = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.09-DecisoAnterior.main.question_decisao'.'Não — nenhuma dessas situações'
+          actions:
+            - kind: SetVariable
+              id: setVariable_semDecisao
+              variable: Global.SemDecisaoAnterior
+              value: =true
+
+        - id: cond_decisaoAnterior
+          condition: =Topic.respostaDecisao = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.09-DecisoAnterior.main.question_decisao'.'Sim, já há decisão anterior não modificada sobre mim'
+          actions:
+            - kind: SetVariable
+              id: setVariable_motivoDecisao
+              variable: Global.MotivoBloqueio
+              value: ="decisao_anterior"
+
+            - kind: SetVariable
+              id: setVariable_statusDecisao
+              variable: Global.StatusFluxo
+              value: ="bloqueado_insanavel"
+
+            - kind: SendActivity
+              id: debug_decisaoAnterior
+              activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+            - kind: BeginDialog
+              id: f33qSD
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-DecisoAnterior
+
+        - id: cond_materiaNormatizada
+          condition: =Topic.respostaDecisao = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.09-DecisoAnterior.main.question_decisao'.'Sim, a matéria já está em ato normativo ou lei literal'
+          actions:
+            - kind: SetVariable
+              id: setVariable_motivoNormatizada
+              variable: Global.MotivoBloqueio
+              value: ="materia_normatizada"
+
+            - kind: SetVariable
+              id: setVariable_statusNormatizada
+              variable: Global.StatusFluxo
+              value: ="bloqueado_insanavel"
+
+            - kind: SendActivity
+              id: debug_materiaNormatizada
+              activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+            - kind: BeginDialog
+              id: iTRvAr
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-MatriaNormatizada
+
+        - id: cond_constitucionalidade
+          condition: =Topic.respostaDecisao = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.09-DecisoAnterior.main.question_decisao'.'Minha dúvida é sobre constitucionalidade/legalidade'
+          actions:
+            - kind: SetVariable
+              id: setVariable_motivoConstitucionalidade
+              variable: Global.MotivoBloqueio
+              value: ="constitucionalidade"
+
+            - kind: SetVariable
+              id: setVariable_statusConstitucionalidade
+              variable: Global.StatusFluxo
+              value: ="bloqueado_insanavel"
+
+            - kind: SendActivity
+              id: debug_constitucionalidade
+              activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+            - kind: BeginDialog
+              id: 91CPwB
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-MatriaNormatizada
+
+    - kind: ConditionGroup
+      id: conditionGroup_continuar09
+      conditions:
+        - id: cond_fluxoAtivo09
+          condition: =Global.StatusFluxo = "iniciado"
+          actions:
+            - kind: SendActivity
+              id: debug_final09
+              activity: "[DEBUG] SemDecisaoAnterior:{Global.SemDecisaoAnterior} | StatusFluxo:{Global.StatusFluxo}"
+
+            - kind: BeginDialog
+              id: ogFrAj
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.10-ChecklistFormal
+
+inputType: {}
+outputType: {}

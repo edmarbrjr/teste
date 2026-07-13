@@ -1,0 +1,19 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnConversationStart
+  id: main
+  actions:
+    - kind: SendActivity
+      id: sendMessage_M0LuhV
+      activity:
+        text:
+          - |-
+            Olá! Sou o assistente de admissibilidade de Soluções de Consulta da RFB.
+            Vou te guiar por algumas perguntas rápidas para verificar se sua consulta está apta a ser protocolada — assim evitamos que você receba um despacho de ineficácia lá na frente.
+            ⚠️ **Importante:** este assistente NÃO responde a dúvidas tributárias. Apenas verifica se o procedimento de protocolo está correto.
+        speak:
+          - Olá, e obrigado por ligar para o {System.Bot.Name}. Observe que algumas respostas são geradas por IA e pode ser necessário verificar sua exatidão. Como posso ajudar você hoje?
+
+    - kind: BeginDialog
+      id: WmCsui
+      dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.ZZ-InicializadordeVariveis

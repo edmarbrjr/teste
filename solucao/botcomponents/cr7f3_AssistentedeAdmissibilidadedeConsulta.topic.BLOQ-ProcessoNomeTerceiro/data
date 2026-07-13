@@ -1,0 +1,102 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SendActivity
+      id: msg_bloqTerceiroTitulo
+      activity: |-
+        🔴 BLOQUEIO — O PROCESSO SERIA REJEITADO
+
+        ⚠️ REGRA OBRIGATÓRIA: o processo digital deve ser aberto no CPF/CNPJ do **contribuinte** (consulente) — SEMPRE, mesmo quando há procurador habilitado.
+
+        O procurador (contador, advogado) usa a própria identidade digital para ENTRAR no e-CAC, mas NÃO pode abrir o processo no seu próprio perfil: ele deve usar "Alterar perfil de acesso" para abrir o processo em nome do contribuinte.
+
+    - kind: ConditionGroup
+      id: conditionGroup_bloqTerceiroMotivo
+      conditions:
+        - id: cond_bloqSemProcuracao
+          condition: =Global.MotivoBloqueio = "terceiro_sem_procuracao"
+          actions:
+            - kind: SendActivity
+              id: msg_bloqSemProcuracao
+              activity: |-
+                No seu caso: você ainda **não possui procuração eletrônica RFB** do contribuinte. Sem ela, o processo aberto por terceiro é REJEITADO e ARQUIVADO, sem oportunidade de saneamento.
+
+                ✅ Como corrigir:
+
+                1. O contribuinte outorga a procuração eletrônica RFB no e-CAC: Cadastros → Procurações → Cadastrar Procuração (ou pela Solicitação de Procuração RFB, se apenas o procurador tiver certificado digital)
+                2. Só depois disso você poderá abrir o processo em nome do contribuinte
+
+        - id: cond_bloqNomeProprio
+          condition: =Global.MotivoBloqueio = "terceiro_nome_proprio"
+          actions:
+            - kind: SendActivity
+              id: msg_bloqNomeProprio
+              activity: |-
+                No seu caso: você **tem procuração**, mas abriria o processo no seu próprio perfil do e-CAC — o processo ficaria registrado no SEU CPF/CNPJ, e não no do contribuinte. Consultas registradas no CPF/CNPJ do procurador, e não no do verdadeiro contribuinte, são consideradas ineficazes.
+
+                ✅ Como corrigir:
+
+                1. Entre no e-CAC com a sua identidade digital (gov.br ou e-CNPJ)
+                2. Clique em **"Alterar perfil de acesso"** e selecione "Procurador de pessoa física - CPF" ou "Procurador de pessoa jurídica - CNPJ", informando o CPF/CNPJ do CONTRIBUINTE
+                3. Abra o processo — ele ficará registrado no CPF/CNPJ do contribuinte
+
+      elseActions:
+        - kind: SendActivity
+          id: debug_bloqTerceiroInesperado
+          activity: "[DEBUG] ERRO: BLOQ Nome Terceiro chamado com MotivoBloqueio inesperado = {Global.MotivoBloqueio}"
+
+    - kind: SendActivity
+      id: msg_bloqTerceiroAtencao
+      activity: |-
+        👀 DICA DE CONFERÊNCIA (erro muito frequente): ao abrir o processo, o sistema deve mostrar o NOME e o CPF/CNPJ **do contribuinte** como interessado — não os do escritório.
+
+        📖 Base legal: arts. 3º, § 1º, 7º e 9º da IN RFB 2.058/2021; IN RFB 2.022/2021 (procuração eletrônica).
+
+    - kind: SendActivity
+      id: debug_bloqTerceiro
+      activity: "[DEBUG] BLOQ Nome Terceiro exibido | MotivoBloqueio:{Global.MotivoBloqueio} | StatusFluxo:{Global.StatusFluxo}"
+
+    - kind: Question
+      id: question_bloqTerceiroReiniciar
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaBloqTerceiroReiniciar
+      prompt: Depois de ajustar a forma de protocolo, deseja refazer a triagem?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, refazer a triagem
+              displayName: Sim, refazer a triagem
+
+            - id: Não, encerrar
+              displayName: Não, encerrar
+
+    - kind: ConditionGroup
+      id: conditionGroup_bloqTerceiroReiniciar
+      conditions:
+        - id: cond_bloqTerceiroReiniciarSim
+          condition: =Topic.respostaBloqTerceiroReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-ProcessoNomeTerceiro.main.question_bloqTerceiroReiniciar'.'Sim, refazer a triagem'
+          actions:
+            - kind: BeginDialog
+              id: VaTVYV
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.ZZ-InicializadordeVariveis
+
+            - kind: BeginDialog
+              id: r15JAW
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.00-TipodeConsulta
+
+        - id: cond_bloqTerceiroEncerrar
+          condition: =Topic.respostaBloqTerceiroReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-ProcessoNomeTerceiro.main.question_bloqTerceiroReiniciar'.'Não, encerrar'
+          actions:
+            - kind: SendActivity
+              id: msg_bloqTerceiroDespedida
+              activity: Combinado. Ajuste a forma de protocolo e volte quando quiser refazer a triagem. 👋
+
+inputType: {}
+outputType: {}

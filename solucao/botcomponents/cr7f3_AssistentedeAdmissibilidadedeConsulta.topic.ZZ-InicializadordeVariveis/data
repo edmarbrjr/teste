@@ -1,0 +1,55 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRedirect
+  id: main
+  actions:
+    - kind: SetMultipleVariables
+      id: setVariable_ZNi5aj
+      assignments:
+        - variable: Global.TipoConsulta
+          value: =""
+
+        - variable: Global.TipoPessoa
+          value: =""
+
+        - variable: Global.SujeitoPassivo
+          value: =false
+
+        - variable: Global.QuemAssina
+          value: =""
+
+        - variable: Global.DTEAtivo
+          value: =false
+
+        - variable: Global.EMatriz
+          value: =true
+
+        - variable: Global.CompetenciaFederal
+          value: =false
+
+        - variable: Global.FatoDeterminado
+          value: =false
+
+        - variable: Global.SemFiscalizacao
+          value: =false
+
+        - variable: Global.SemDecisaoAnterior
+          value: =false
+
+        - variable: Global.StatusFluxo
+          value: ="iniciado"
+
+        - variable: Global.MotivoBloqueio
+          value: =""
+
+    - kind: SendActivity
+      id: sendActivity_ROqaRi
+      activity: |
+        [DEBUG] Variáveis inicializadas ✓
+
+    - kind: BeginDialog
+      id: wElrgk
+      dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.00-TipodeConsulta
+
+inputType: {}
+outputType: {}

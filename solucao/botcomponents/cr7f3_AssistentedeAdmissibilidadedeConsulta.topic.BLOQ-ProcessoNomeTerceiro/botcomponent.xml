@@ -1,0 +1,10 @@
+<botcomponent schemaname="cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-ProcessoNomeTerceiro">
+  <componenttype>9</componenttype>
+  <iscustomizable>0</iscustomizable>
+  <name>BLOQ - Processo Nome Terceiro</name>
+  <parentbotid>
+    <schemaname>cr7f3_AssistentedeAdmissibilidadedeConsulta</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

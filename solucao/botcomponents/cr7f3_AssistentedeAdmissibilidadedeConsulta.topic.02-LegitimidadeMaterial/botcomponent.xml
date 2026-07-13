@@ -1,0 +1,10 @@
+<botcomponent schemaname="cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.02-LegitimidadeMaterial">
+  <componenttype>9</componenttype>
+  <iscustomizable>0</iscustomizable>
+  <name>02 - Legitimidade Material</name>
+  <parentbotid>
+    <schemaname>cr7f3_AssistentedeAdmissibilidadedeConsulta</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

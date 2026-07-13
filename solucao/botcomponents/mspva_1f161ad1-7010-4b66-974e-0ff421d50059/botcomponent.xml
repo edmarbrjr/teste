@@ -1,0 +1,15 @@
+<botcomponent schemaname="mspva_1f161ad1-7010-4b66-974e-0ff421d50059">
+  <category>Testing</category>
+  <componenttype>19</componenttype>
+  <description>Interpretação da legislação</description>
+  <iscustomizable>0</iscustomizable>
+  <name>Interpretação da legislação</name>
+  <parentbotcomponentid>
+    <schemaname>mspva_e0209c38-9fe8-4244-a0ac-8ef03c3810ed</schemaname>
+  </parentbotcomponentid>
+  <parentbotid>
+    <schemaname>cr7f3_AssistentedeAdmissibilidadedeConsulta</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

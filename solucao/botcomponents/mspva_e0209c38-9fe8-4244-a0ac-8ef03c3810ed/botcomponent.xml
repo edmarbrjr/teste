@@ -1,0 +1,12 @@
+<botcomponent schemaname="mspva_e0209c38-9fe8-4244-a0ac-8ef03c3810ed">
+  <category>Testing</category>
+  <componenttype>19</componenttype>
+  <description>Avaliar Assistente de Admissibilidade de Consulta</description>
+  <iscustomizable>0</iscustomizable>
+  <name>Avaliar Assistente de Admissibilidade de Consulta</name>
+  <parentbotid>
+    <schemaname>cr7f3_AssistentedeAdmissibilidadedeConsulta</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

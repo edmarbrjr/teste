@@ -1,0 +1,360 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: Question
+      id: question_tributo
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaTributo
+      prompt: O tributo objeto da consulta é administrado pela Receita Federal do Brasil?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, é tributo federal (IR, IPI, PIS, COFINS, CSLL, CIDE, ITR, IOF...)
+              displayName: Sim, é tributo federal (IR, IPI, PIS, COFINS, CSLL, CIDE, ITR, IOF...)
+
+            - id: É sobre CBS ou IBS (novos tributos da reforma)
+              displayName: É sobre CBS ou IBS (novos tributos da reforma)
+
+            - id: É ICMS (estadual)
+              displayName: É ICMS (estadual)
+
+            - id: É ISS (municipal)
+              displayName: É ISS (municipal)
+
+            - id: Não sei classificar
+              displayName: Não sei classificar
+
+    - kind: ConditionGroup
+      id: conditionGroup_tributo
+      conditions:
+        - id: cond_federal
+          condition: =Topic.respostaTributo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_tributo'.'Sim, é tributo federal (IR, IPI, PIS, COFINS, CSLL, CIDE, ITR, IOF...)'
+          actions:
+            - kind: SetVariable
+              id: setVariable_competenciaTrue
+              variable: Global.CompetenciaFederal
+              value: =true
+
+        - id: cond_reforma
+          condition: =Topic.respostaTributo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_tributo'.'É sobre CBS ou IBS (novos tributos da reforma)'
+          actions:
+            - kind: Question
+              id: question_reforma
+              interruptionPolicy:
+                allowInterruption: true
+
+              variable: init:Topic.respostaReforma
+              prompt: Sua dúvida é sobre qual dos novos tributos da reforma (Lei Complementar nº 214/2025)?
+              entity:
+                kind: EmbeddedEntity
+                definition:
+                  kind: ClosedListEntity
+                  items:
+                    - id: CBS — Contribuição sobre Bens e Serviços
+                      displayName: CBS — Contribuição sobre Bens e Serviços
+
+                    - id: IBS — Imposto sobre Bens e Serviços
+                      displayName: IBS — Imposto sobre Bens e Serviços
+
+                    - id: Envolve CBS e IBS na mesma operação
+                      displayName: Envolve CBS e IBS na mesma operação
+
+            - kind: ConditionGroup
+              id: conditionGroup_reforma
+              conditions:
+                - id: cond_reformaCbs
+                  condition: =Topic.respostaReforma = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_reforma'.'CBS — Contribuição sobre Bens e Serviços'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_competenciaCbs
+                      variable: Global.CompetenciaFederal
+                      value: =true
+
+                    - kind: SendActivity
+                      id: msg_reformaCbs
+                      activity: "✔️ A CBS é administrada pela Receita Federal — sua consulta pode seguir por aqui, pelo rito normal da IN RFB 2.058/2021. Dica: descreva na consulta o período a que o fato se refere, pois 2026 é o ano de transição da reforma (LC 214/2025)."
+
+                - id: cond_reformaIbs
+                  condition: =Topic.respostaReforma = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_reforma'.'IBS — Imposto sobre Bens e Serviços'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_motivoIbs
+                      variable: Global.MotivoBloqueio
+                      value: ="ibs"
+
+                    - kind: SetVariable
+                      id: setVariable_statusIbs
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_sanavel"
+
+                    - kind: SendActivity
+                      id: debug_ibs
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: BeginDialog
+                      id: DOllWG
+                      dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-CompetnciaErrada
+
+                - id: cond_reformaAmbos
+                  condition: =Topic.respostaReforma = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_reforma'.'Envolve CBS e IBS na mesma operação'
+                  actions:
+                    - kind: SendActivity
+                      id: msg_reformaAmbos
+                      activity: |-
+                        ℹ️ CBS e IBS têm administrações DIFERENTES, embora a legislação seja compartilhada (LC 214/2025):
+
+                        • **CBS** → Receita Federal — a consulta segue por aqui, pelo rito da IN RFB 2.058/2021, e alcançará APENAS a parte da CBS;
+                        • **IBS** → Comitê Gestor do IBS (cgibs.gov.br) — a parte do IBS deve ser formulada pelo canal próprio dele.
+
+                        Ou seja: para cobrir a operação inteira, serão duas consultas, uma em cada canal.
+
+                    - kind: Question
+                      id: question_reformaAmbos
+                      interruptionPolicy:
+                        allowInterruption: true
+
+                      variable: init:Topic.respostaReformaAmbos
+                      prompt: Deseja prosseguir com a triagem da parte da CBS (Receita Federal)?
+                      entity:
+                        kind: EmbeddedEntity
+                        definition:
+                          kind: ClosedListEntity
+                          items:
+                            - id: Sim, prosseguir com a parte da CBS
+                              displayName: Sim, prosseguir com a parte da CBS
+
+                            - id: Não — vou tratar primeiro do IBS
+                              displayName: Não — vou tratar primeiro do IBS
+
+                    - kind: ConditionGroup
+                      id: conditionGroup_reformaAmbos
+                      conditions:
+                        - id: cond_ambosSim
+                          condition: =Topic.respostaReformaAmbos = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_reformaAmbos'.'Sim, prosseguir com a parte da CBS'
+                          actions:
+                            - kind: SetVariable
+                              id: setVariable_competenciaAmbos
+                              variable: Global.CompetenciaFederal
+                              value: =true
+
+                        - id: cond_ambosNao
+                          condition: =Topic.respostaReformaAmbos = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_reformaAmbos'.'Não — vou tratar primeiro do IBS'
+                          actions:
+                            - kind: SetVariable
+                              id: setVariable_statusAmbosNao
+                              variable: Global.StatusFluxo
+                              value: ="encerrado"
+
+                            - kind: SendActivity
+                              id: msg_ambosNao
+                              activity: Sem problema! Formule a parte do IBS no Comitê Gestor (cgibs.gov.br) e, quando quiser verificar a parte da CBS, volte aqui e refaça a triagem. 👋
+
+                            - kind: SendActivity
+                              id: debug_ambosNao
+                              activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | encerrado pelo usuário (CBS+IBS)"
+
+        - id: cond_icms
+          condition: =Topic.respostaTributo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_tributo'.'É ICMS (estadual)'
+          actions:
+            - kind: SetVariable
+              id: setVariable_motivoIcms
+              variable: Global.MotivoBloqueio
+              value: ="icms"
+
+            - kind: SetVariable
+              id: setVariable_statusIcms
+              variable: Global.StatusFluxo
+              value: ="bloqueado_sanavel"
+
+            - kind: SendActivity
+              id: debug_icms
+              activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+            - kind: BeginDialog
+              id: 28zwG5
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-CompetnciaErrada
+
+        - id: cond_iss
+          condition: =Topic.respostaTributo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_tributo'.'É ISS (municipal)'
+          actions:
+            - kind: SetVariable
+              id: setVariable_motivoIss
+              variable: Global.MotivoBloqueio
+              value: ="iss"
+
+            - kind: SetVariable
+              id: setVariable_statusIss
+              variable: Global.StatusFluxo
+              value: ="bloqueado_sanavel"
+
+            - kind: SendActivity
+              id: debug_iss
+              activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+            - kind: BeginDialog
+              id: xtqWQ2
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-CompetnciaErrada
+
+        - id: cond_naoSei
+          condition: =Topic.respostaTributo = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_tributo'.'Não sei classificar'
+          actions:
+            - kind: SendActivity
+              id: msg_orientacaoTributo
+              activity: |-
+                Competência dos tributos no Brasil:
+
+                🔵 FEDERAIS (Receita Federal — consulte aqui):
+                • IRPF, IRPJ, IRRF
+                • IPI, PIS/Pasep, COFINS
+                • CSLL, CIDE-Remessas, CIDE-Combustíveis
+                • Contribuições previdenciárias patronais (INSS empresa)
+                • ITR, IOF, AFRMM
+                • Contribuições para terceiros (Sistema S)
+                • CBS (novo tributo da reforma — desde 2026)
+
+                🟡 ESTADUAIS (SEFAZ do seu estado):
+                • ICMS, IPVA, ITCMD
+
+                🟢 MUNICIPAIS (Prefeitura):
+                • ISS, IPTU, ITBI
+
+                🟣 REFORMA TRIBUTÁRIA (LC 214/2025):
+                • CBS → Receita Federal (consulte aqui)
+                • IBS → Comitê Gestor do IBS (cgibs.gov.br)
+
+            - kind: Question
+              id: question_tributoRecheck
+              interruptionPolicy:
+                allowInterruption: true
+
+              variable: init:Topic.respostaTributoRecheck
+              prompt: Agora sabe classificar? Qual é o tributo da sua dúvida?
+              entity:
+                kind: EmbeddedEntity
+                definition:
+                  kind: ClosedListEntity
+                  items:
+                    - id: Federal (RFB) — é daqui
+                      displayName: Federal (RFB) — é daqui
+
+                    - id: É CBS (reforma) — também é daqui
+                      displayName: É CBS (reforma) — também é daqui
+
+                    - id: É IBS (reforma) — Comitê Gestor
+                      displayName: É IBS (reforma) — Comitê Gestor
+
+                    - id: Estadual — é ICMS
+                      displayName: Estadual — é ICMS
+
+                    - id: Municipal — é ISS
+                      displayName: Municipal — é ISS
+
+            - kind: ConditionGroup
+              id: conditionGroup_tributoRecheck
+              conditions:
+                - id: cond_recheckFederal
+                  condition: =Topic.respostaTributoRecheck = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_tributoRecheck'.'Federal (RFB) — é daqui'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_recheckFederal
+                      variable: Global.CompetenciaFederal
+                      value: =true
+
+                - id: cond_recheckCbs
+                  condition: =Topic.respostaTributoRecheck = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_tributoRecheck'.'É CBS (reforma) — também é daqui'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_recheckCbs
+                      variable: Global.CompetenciaFederal
+                      value: =true
+
+                    - kind: SendActivity
+                      id: msg_recheckCbs
+                      activity: ✔️ A CBS é administrada pela Receita Federal — sua consulta pode seguir por aqui, pelo rito normal da IN RFB 2.058/2021.
+
+                - id: cond_recheckIbs
+                  condition: =Topic.respostaTributoRecheck = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_tributoRecheck'.'É IBS (reforma) — Comitê Gestor'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_motivoRecheckIbs
+                      variable: Global.MotivoBloqueio
+                      value: ="ibs"
+
+                    - kind: SetVariable
+                      id: setVariable_statusRecheckIbs
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_sanavel"
+
+                    - kind: SendActivity
+                      id: debug_recheckIbs
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: BeginDialog
+                      id: bOeLyx
+                      dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-CompetnciaErrada
+
+                - id: cond_recheckIcms
+                  condition: =Topic.respostaTributoRecheck = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_tributoRecheck'.'Estadual — é ICMS'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_motivoRecheckIcms
+                      variable: Global.MotivoBloqueio
+                      value: ="icms"
+
+                    - kind: SetVariable
+                      id: setVariable_statusRecheckIcms
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_sanavel"
+
+                    - kind: SendActivity
+                      id: debug_recheckIcms
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: BeginDialog
+                      id: kwBn3q
+                      dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-CompetnciaErrada
+
+                - id: cond_recheckIss
+                  condition: =Topic.respostaTributoRecheck = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.06-CompetenciaFederal.main.question_tributoRecheck'.'Municipal — é ISS'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_motivoRecheckIss
+                      variable: Global.MotivoBloqueio
+                      value: ="iss"
+
+                    - kind: SetVariable
+                      id: setVariable_statusRecheckIss
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_sanavel"
+
+                    - kind: SendActivity
+                      id: debug_recheckIss
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: BeginDialog
+                      id: Ak3aq3
+                      dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.SAN-CompetnciaErrada
+
+    - kind: ConditionGroup
+      id: conditionGroup_continuar06
+      conditions:
+        - id: cond_fluxoAtivo06
+          condition: =Global.StatusFluxo = "iniciado"
+          actions:
+            - kind: SendActivity
+              id: debug_final06
+              activity: "[DEBUG] CompetenciaFederal:{Global.CompetenciaFederal} | StatusFluxo:{Global.StatusFluxo}"
+
+            - kind: BeginDialog
+              id: EAAjlq
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.07-FatoDeterminado
+
+inputType: {}
+outputType: {}

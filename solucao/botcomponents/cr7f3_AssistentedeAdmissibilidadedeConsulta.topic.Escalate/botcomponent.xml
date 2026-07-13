@@ -1,0 +1,13 @@
+<botcomponent schemaname="cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.Escalate">
+  <componenttype>9</componenttype>
+  <description>Esse tópico do sistema é disparado quando o usuário indica que gostaria de conversar com um represente.
+Você pode configurar como o agente tratará os cenários de entrega humana nas configurações do agente.
+Se o agente não tratar escalonamentos, esse tópico deverá ser desabilitado.</description>
+  <iscustomizable>0</iscustomizable>
+  <name>Escalonar</name>
+  <parentbotid>
+    <schemaname>cr7f3_AssistentedeAdmissibilidadedeConsulta</schemaname>
+  </parentbotid>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+</botcomponent>

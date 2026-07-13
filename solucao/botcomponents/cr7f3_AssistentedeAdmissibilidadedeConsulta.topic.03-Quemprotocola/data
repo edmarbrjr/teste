@@ -1,0 +1,232 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SendActivity
+      id: msg_regraFundamental
+      activity: |-
+        ⚠️ REGRA FUNDAMENTAL — leia com atenção:
+
+        O processo digital de consulta deve ser OBRIGATORIAMENTE aberto no CPF/CNPJ do **consulente** (o contribuinte).
+
+        Isso vale MESMO quando há procurador: o procurador (contador, advogado, escritório) usa a própria identidade digital para ENTRAR no e-CAC, mas deve abrir o processo em nome do contribuinte, pela funcionalidade "Alterar perfil de acesso".
+
+        ❌ ERRADO: o contador entra no e-CAC e abre o processo no seu PRÓPRIO perfil — o processo ficaria registrado no CPF/CNPJ dele, e não no do contribuinte
+
+        ✔️ CORRETO: o contador entra no e-CAC → "Alterar perfil de acesso" → assume o perfil "Procurador de PF" ou "Procurador de PJ" → abre o processo, que fica registrado NO CPF/CNPJ DO CONTRIBUINTE
+
+    - kind: ConditionGroup
+      id: conditionGroup_tipoPessoa03
+      conditions:
+        - id: cond_qpPF
+          condition: =Global.TipoPessoa = "pf"
+          actions:
+            - kind: Question
+              id: question_qpPF
+              interruptionPolicy:
+                allowInterruption: true
+
+              variable: init:Topic.respostaQuemProtocolaPF
+              prompt: "Quem vai abrir o processo no e-CAC? Escolha a opção que descreve a SUA situação (quem está respondendo):"
+              entity:
+                kind: EmbeddedEntity
+                definition:
+                  kind: ClosedListEntity
+                  items:
+                    - id: Sou o próprio contribuinte — eu mesmo vou abrir e assinar
+                      displayName: Sou o próprio contribuinte — eu mesmo vou abrir e assinar
+
+                    - id: Sou procurador COM procuração RFB — vou abrir em nome do contribuinte (via Alterar perfil de acesso)
+                      displayName: Sou procurador COM procuração RFB — vou abrir em nome do contribuinte (via Alterar perfil de acesso)
+
+                    - id: Sou contador/procurador SEM procuração eletrônica RFB
+                      displayName: Sou contador/procurador SEM procuração eletrônica RFB
+
+                    - id: Sou procurador COM procuração, mas abriria no meu próprio perfil do e-CAC (meu CPF/CNPJ)
+                      displayName: Sou procurador COM procuração, mas abriria no meu próprio perfil do e-CAC (meu CPF/CNPJ)
+
+            - kind: ConditionGroup
+              id: conditionGroup_qpPF
+              conditions:
+                - id: cond_qpPFProprio
+                  condition: =Topic.respostaQuemProtocolaPF = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.03-Quemprotocola.main.question_qpPF'.'Sou o próprio contribuinte — eu mesmo vou abrir e assinar'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_qpPFProprio
+                      variable: Global.QuemAssina
+                      value: ="proprio"
+
+                - id: cond_qpPFProcurador
+                  condition: =Topic.respostaQuemProtocolaPF = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.03-Quemprotocola.main.question_qpPF'.'Sou procurador COM procuração RFB — vou abrir em nome do contribuinte (via Alterar perfil de acesso)'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_qpPFProcurador
+                      variable: Global.QuemAssina
+                      value: ="procurador_rfb"
+
+                - id: cond_qpPFSemProc
+                  condition: =Topic.respostaQuemProtocolaPF = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.03-Quemprotocola.main.question_qpPF'.'Sou contador/procurador SEM procuração eletrônica RFB'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_qpPFSemProcAssina
+                      variable: Global.QuemAssina
+                      value: ="terceiro"
+
+                    - kind: SetVariable
+                      id: setVariable_qpPFSemProcMotivo
+                      variable: Global.MotivoBloqueio
+                      value: ="terceiro_sem_procuracao"
+
+                    - kind: SetVariable
+                      id: setVariable_qpPFSemProcStatus
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_insanavel"
+
+                    - kind: SendActivity
+                      id: debug_qpPFSemProc
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: BeginDialog
+                      id: redirect_qpPFSemProc
+                      dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-ProcessoNomeTerceiro
+
+                - id: cond_qpPFNomeErrado
+                  condition: =Topic.respostaQuemProtocolaPF = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.03-Quemprotocola.main.question_qpPF'.'Sou procurador COM procuração, mas abriria no meu próprio perfil do e-CAC (meu CPF/CNPJ)'
+                  actions:
+                    - kind: SetVariable
+                      id: setVariable_qpPFNomeErradoAssina
+                      variable: Global.QuemAssina
+                      value: ="terceiro"
+
+                    - kind: SetVariable
+                      id: setVariable_qpPFNomeErradoMotivo
+                      variable: Global.MotivoBloqueio
+                      value: ="terceiro_nome_proprio"
+
+                    - kind: SetVariable
+                      id: setVariable_qpPFNomeErradoStatus
+                      variable: Global.StatusFluxo
+                      value: ="bloqueado_insanavel"
+
+                    - kind: SendActivity
+                      id: debug_qpPFNomeErrado
+                      activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                    - kind: BeginDialog
+                      id: redirect_qpPFNomeErrado
+                      dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-ProcessoNomeTerceiro
+
+      elseActions:
+        - kind: Question
+          id: question_qpPJ
+          interruptionPolicy:
+            allowInterruption: true
+
+          variable: init:Topic.respostaQuemProtocolaPJ
+          prompt: "Quem vai abrir o processo no e-CAC? Escolha a opção que descreve a SUA situação (quem está respondendo):"
+          entity:
+            kind: EmbeddedEntity
+            definition:
+              kind: ClosedListEntity
+              items:
+                - id: Sou o representante legal da PJ — vou abrir com o e-CNPJ da empresa
+                  displayName: Sou o representante legal da PJ — vou abrir com o e-CNPJ da empresa
+
+                - id: Sou procurador COM procuração RFB — vou abrir em nome da PJ (via Alterar perfil de acesso)
+                  displayName: Sou procurador COM procuração RFB — vou abrir em nome da PJ (via Alterar perfil de acesso)
+
+                - id: Sou contador/procurador SEM procuração eletrônica RFB
+                  displayName: Sou contador/procurador SEM procuração eletrônica RFB
+
+                - id: Sou procurador COM procuração, mas abriria no meu próprio perfil do e-CAC (meu CNPJ)
+                  displayName: Sou procurador COM procuração, mas abriria no meu próprio perfil do e-CAC (meu CNPJ)
+
+        - kind: ConditionGroup
+          id: conditionGroup_qpPJ
+          conditions:
+            - id: cond_qpPJProprio
+              condition: =Topic.respostaQuemProtocolaPJ = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.03-Quemprotocola.main.question_qpPJ'.'Sou o representante legal da PJ — vou abrir com o e-CNPJ da empresa'
+              actions:
+                - kind: SetVariable
+                  id: setVariable_qpPJProprio
+                  variable: Global.QuemAssina
+                  value: ="proprio"
+
+            - id: cond_qpPJProcurador
+              condition: =Topic.respostaQuemProtocolaPJ = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.03-Quemprotocola.main.question_qpPJ'.'Sou procurador COM procuração RFB — vou abrir em nome da PJ (via Alterar perfil de acesso)'
+              actions:
+                - kind: SetVariable
+                  id: setVariable_qpPJProcurador
+                  variable: Global.QuemAssina
+                  value: ="procurador_rfb"
+
+            - id: cond_qpPJSemProc
+              condition: =Topic.respostaQuemProtocolaPJ = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.03-Quemprotocola.main.question_qpPJ'.'Sou contador/procurador SEM procuração eletrônica RFB'
+              actions:
+                - kind: SetVariable
+                  id: setVariable_qpPJSemProcAssina
+                  variable: Global.QuemAssina
+                  value: ="terceiro"
+
+                - kind: SetVariable
+                  id: setVariable_qpPJSemProcMotivo
+                  variable: Global.MotivoBloqueio
+                  value: ="terceiro_sem_procuracao"
+
+                - kind: SetVariable
+                  id: setVariable_qpPJSemProcStatus
+                  variable: Global.StatusFluxo
+                  value: ="bloqueado_insanavel"
+
+                - kind: SendActivity
+                  id: debug_qpPJSemProc
+                  activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                - kind: BeginDialog
+                  id: redirect_qpPJSemProc
+                  dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-ProcessoNomeTerceiro
+
+            - id: cond_qpPJNomeErrado
+              condition: =Topic.respostaQuemProtocolaPJ = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.03-Quemprotocola.main.question_qpPJ'.'Sou procurador COM procuração, mas abriria no meu próprio perfil do e-CAC (meu CNPJ)'
+              actions:
+                - kind: SetVariable
+                  id: setVariable_qpPJNomeErradoAssina
+                  variable: Global.QuemAssina
+                  value: ="terceiro"
+
+                - kind: SetVariable
+                  id: setVariable_qpPJNomeErradoMotivo
+                  variable: Global.MotivoBloqueio
+                  value: ="terceiro_nome_proprio"
+
+                - kind: SetVariable
+                  id: setVariable_qpPJNomeErradoStatus
+                  variable: Global.StatusFluxo
+                  value: ="bloqueado_insanavel"
+
+                - kind: SendActivity
+                  id: debug_qpPJNomeErrado
+                  activity: "[DEBUG] StatusFluxo:{Global.StatusFluxo} | MotivoBloqueio:{Global.MotivoBloqueio}"
+
+                - kind: BeginDialog
+                  id: redirect_qpPJNomeErrado
+                  dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-ProcessoNomeTerceiro
+
+    - kind: ConditionGroup
+      id: conditionGroup_continuar03
+      conditions:
+        - id: cond_fluxoAtivo03
+          condition: =Global.StatusFluxo = "iniciado"
+          actions:
+            - kind: SendActivity
+              id: debug_final03
+              activity: "[DEBUG] QuemAssina:{Global.QuemAssina} | StatusFluxo:{Global.StatusFluxo}"
+
+            - kind: BeginDialog
+              id: LV42Xd
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.teste4A
+
+inputType: {}
+outputType: {}

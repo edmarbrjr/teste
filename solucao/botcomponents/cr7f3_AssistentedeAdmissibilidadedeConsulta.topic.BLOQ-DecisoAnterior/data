@@ -1,0 +1,71 @@
+kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent: {}
+  actions:
+    - kind: SendActivity
+      id: msg_bloqDecisaoTitulo
+      activity: |-
+        🔴 BLOQUEIO INSANÁVEL — DECISÃO ANTERIOR NÃO MODIFICADA
+
+        O fato consultado já foi objeto de decisão em consulta ou em litígio (administrativo ou judicial) em que o consulente foi parte, e esse entendimento não foi alterado por ato superveniente. O inciso VI do art. 27 da IN RFB 2.058/2021 NÃO está no rol de hipóteses sanáveis.
+
+        ⚠️ CONSEQUÊNCIA PRÁTICA: ineficácia direta — nova consulta sobre a mesma matéria não produzirá efeitos.
+
+    - kind: SendActivity
+      id: msg_bloqDecisaoAlternativas
+      activity: |-
+        💡 ALTERNATIVAS:
+
+        1. Se você identificou uma Solução de Consulta **divergente** da que foi aplicada ao seu caso, publicada posteriormente sobre matéria idêntica — apresente RECURSO ESPECIAL DE DIVERGÊNCIA, no prazo de 30 dias da ciência ou da publicação (arts. 35 e 36 da IN RFB 2.058/2021).
+
+        2. Se houve ato normativo superveniente alterando o entendimento da administração, a decisão anterior deixa de prevalecer — nesse caso, a consulta pode ser cabível; refaça a triagem considerando essa modificação.
+
+        📖 Base legal: art. 27, VI, da IN RFB 2.058/2021.
+
+    - kind: SendActivity
+      id: debug_bloqDecisao
+      activity: "[DEBUG] BLOQ Decisão Anterior exibido | MotivoBloqueio:{Global.MotivoBloqueio} | StatusFluxo:{Global.StatusFluxo}"
+
+    - kind: Question
+      id: question_bloqDecisaoReiniciar
+      interruptionPolicy:
+        allowInterruption: true
+
+      variable: init:Topic.respostaBloqDecisaoReiniciar
+      prompt: Deseja refazer a triagem (por exemplo, se houve ato superveniente que alterou o entendimento)?
+      entity:
+        kind: EmbeddedEntity
+        definition:
+          kind: ClosedListEntity
+          items:
+            - id: Sim, refazer a triagem
+              displayName: Sim, refazer a triagem
+
+            - id: Não, encerrar
+              displayName: Não, encerrar
+
+    - kind: ConditionGroup
+      id: conditionGroup_bloqDecisaoReiniciar
+      conditions:
+        - id: cond_bloqDecisaoReiniciarSim
+          condition: =Topic.respostaBloqDecisaoReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-DecisoAnterior.main.question_bloqDecisaoReiniciar'.'Sim, refazer a triagem'
+          actions:
+            - kind: BeginDialog
+              id: jlsiuq
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.ZZ-InicializadordeVariveis
+
+            - kind: BeginDialog
+              id: 76DADn
+              dialog: cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.00-TipodeConsulta
+
+        - id: cond_bloqDecisaoEncerrar
+          condition: =Topic.respostaBloqDecisaoReiniciar = 'cr7f3_AssistentedeAdmissibilidadedeConsulta.topic.BLOQ-DecisoAnterior.main.question_bloqDecisaoReiniciar'.'Não, encerrar'
+          actions:
+            - kind: SendActivity
+              id: msg_bloqDecisaoDespedida
+              activity: Entendido. Se o cenário mudar (ato superveniente ou solução divergente), volte para reavaliar. 👋
+
+inputType: {}
+outputType: {}
