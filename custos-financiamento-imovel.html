@@ -262,8 +262,9 @@
       <div class="tools">
         <button class="btn ghost tiny" id="csvBtn">Exportar planilha (CSV)</button>
         <button class="btn ghost tiny" id="backupBtn">Baixar backup</button>
-        <button class="btn ghost tiny" id="restoreBtn">Restaurar backup</button>
-        <input type="file" id="restoreFile" accept="application/json" hidden>
+        <button class="btn ghost tiny" id="mergeBtn">Mesclar backup</button>
+        <button class="btn ghost tiny" id="restoreBtn">Substituir pelo backup</button>
+        <input type="file" id="restoreFile" accept=".json,application/json" hidden>
       </div>
     </div>
     <div class="table-scroll">
@@ -282,8 +283,10 @@
   </section>
 
   <p class="hint">
-    Seus dados ficam salvos <b>só neste aparelho/navegador</b> — nada é enviado para a internet.<br>
-    Limpar os dados do navegador apaga tudo, então baixe um <b>backup</b> de vez em quando.
+    Seus dados ficam salvos <b>neste aparelho/navegador</b> — nada é enviado automaticamente para a internet.<br>
+    Para juntar os lançamentos de outro aparelho ou da outra pessoa: lá, use <b>Baixar backup</b>,
+    envie o arquivo (WhatsApp, e-mail) e aqui use <b>Mesclar backup</b> — nada é apagado nem duplicado.<br>
+    Baixe um backup de vez em quando: limpar os dados do navegador apaga tudo.
   </p>
 
 </div>
@@ -469,11 +472,13 @@
   });
   function csv(s){ s=String(s); return /[;"\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
 
-  // ---- Backup / restore ----
+  // ---- Backup / mesclar / substituir ----
+  var fileMode = "replace"; // "replace" | "merge"
   $("backupBtn").addEventListener("click", function(){
     downloadBlob(JSON.stringify(state,null,2), "backup-custos-imovel.json", "application/json");
   });
-  $("restoreBtn").addEventListener("click", function(){ $("restoreFile").click(); });
+  $("mergeBtn").addEventListener("click", function(){ fileMode="merge"; $("restoreFile").click(); });
+  $("restoreBtn").addEventListener("click", function(){ fileMode="replace"; $("restoreFile").click(); });
   $("restoreFile").addEventListener("change", function(e){
     var f=e.target.files[0]; if(!f) return;
     var rd=new FileReader();
@@ -481,16 +486,50 @@
       try{
         var s=JSON.parse(rd.result);
         if(!s || !Array.isArray(s.items)) throw 0;
-        if(!confirm("Restaurar este backup vai substituir os dados atuais. Continuar?")) return;
-        state=normalize(s); save(); render();
-      }catch(err){ alert("Arquivo de backup inválido."); }
+        if(fileMode==="merge") mergeItems(s);
+        else {
+          if(!confirm("Substituir vai APAGAR os dados atuais e ficar só com o backup. Continuar? (Para juntar os dois, use Mesclar backup.)")) return;
+          state=normalize(s); save(); render();
+        }
+      }catch(err){ alert("Arquivo de backup inválido. Use um arquivo baixado pelo botão “Baixar backup”."); }
     };
     rd.readAsText(f);
     e.target.value="";
   });
 
+  function mergeItems(s){
+    var have={};
+    state.items.forEach(function(it){ have[it.id]=true; });
+    var added=0, dupes=0;
+    (s.items||[]).forEach(function(it){
+      if(!it || typeof it.value!=="number" || !(it.who==="A"||it.who==="B")) return;
+      if(it.id && have[it.id]){ dupes++; return; }
+      if(!it.id) it.id=uid();
+      have[it.id]=true;
+      state.items.push({ id:it.id, date:it.date||"", desc:String(it.desc||"(sem descrição)"),
+        cat:String(it.cat||"Outros"), value:Math.round(it.value*100)/100, who:it.who });
+      added++;
+    });
+    save(); render();
+    alert(added===0
+      ? "Nenhum lançamento novo — tudo desse backup já estava aqui."
+      : added+" lançamento(s) adicionado(s)."+(dupes? " "+dupes+" já existia(m) e foi(ram) ignorado(s).":""));
+  }
+
   function downloadBlob(txt, name, type){
-    var blob=new Blob([type.indexOf("csv")>-1?"﻿"+txt:txt],{type:type});
+    var isCsv = type.indexOf("csv")>-1;
+    var content = isCsv ? "﻿"+txt : txt;
+    var cd = window.claude && window.claude.downloads;
+    if(cd){
+      // Página publicada: extensão .csv não é aceita; salva como .txt (abre no Excel do mesmo jeito)
+      var fname = isCsv ? name.replace(/\.csv$/i,".txt") : name;
+      cd.save({filename:fname, data:content}).catch(function(err){
+        if(err && err.code==="declined") return;
+        alert("Não foi possível baixar agora. Tente novamente em instantes.");
+      });
+      return;
+    }
+    var blob=new Blob([content],{type:type});
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a");
     a.href=url; a.download=name; document.body.appendChild(a); a.click();
