@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custos do Financiamento do Imóvel</title>
+<style>
+  /* ---------- Tokens ---------- */
+  :root{
+    --ground:#f5f7f4;
+    --surface:#ffffff;
+    --surface-2:#eef1ec;
+    --ink:#1b2320;
+    --ink-soft:#4a544e;
+    --ink-faint:#7a847d;
+    --line:#dbe1db;
+    --line-strong:#c4ccc4;
+    --pa:#35618e;        /* pessoa A - azul */
+    --pa-soft:#e6eef6;
+    --pb:#b0742c;        /* pessoa B - âmbar/cobre */
+    --pb-soft:#f6ecdd;
+    --pos:#2e7d5b;       /* a receber */
+    --neg:#bb4630;       /* a pagar */
+    --shadow:0 1px 2px rgba(24,40,32,.06), 0 8px 24px rgba(24,40,32,.06);
+    --radius:14px;
+    --serif:Georgia,"Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#121613;
+      --surface:#1a201c;
+      --surface-2:#222a25;
+      --ink:#e8ede9;
+      --ink-soft:#aab4ad;
+      --ink-faint:#7c867f;
+      --line:#2c352e;
+      --line-strong:#3a453d;
+      --pa:#6ea0d6;
+      --pa-soft:#1e2b38;
+      --pb:#d69a53;
+      --pb-soft:#33281a;
+      --pos:#54b98a;
+      --neg:#e07a63;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#f5f7f4;--surface:#ffffff;--surface-2:#eef1ec;--ink:#1b2320;--ink-soft:#4a544e;--ink-faint:#7a847d;--line:#dbe1db;--line-strong:#c4ccc4;--pa:#35618e;--pa-soft:#e6eef6;--pb:#b0742c;--pb-soft:#f6ecdd;--pos:#2e7d5b;--neg:#bb4630;--shadow:0 1px 2px rgba(24,40,32,.06), 0 8px 24px rgba(24,40,32,.06);
+  }
+  :root[data-theme="dark"]{
+    --ground:#121613;--surface:#1a201c;--surface-2:#222a25;--ink:#e8ede9;--ink-soft:#aab4ad;--ink-faint:#7c867f;--line:#2c352e;--line-strong:#3a453d;--pa:#6ea0d6;--pa-soft:#1e2b38;--pb:#d69a53;--pb-soft:#33281a;--pos:#54b98a;--neg:#e07a63;--shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:var(--sans);
+    background:var(--ground);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:22px 18px 80px}
+
+  /* ---------- Header ---------- */
+  header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}
+  .brand{display:flex;gap:12px;align-items:center}
+  .key{width:40px;height:40px;flex:0 0 auto;border-radius:11px;background:linear-gradient(150deg,var(--pa),var(--pb));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow)}
+  .key svg{width:22px;height:22px}
+  h1{font-family:var(--serif);font-weight:600;font-size:1.32rem;margin:0;letter-spacing:-.01em;line-height:1.15;text-wrap:balance}
+  .sub{color:var(--ink-faint);font-size:.82rem;margin-top:2px}
+  .theme-btn{background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);border-radius:10px;padding:8px 10px;cursor:pointer;font-size:.9rem;line-height:1}
+  .theme-btn:hover{border-color:var(--line-strong)}
+
+  /* ---------- Cards ---------- */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card + .card{margin-top:18px}
+  .card-h{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .card-h h2{margin:0;font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+  .card-b{padding:18px}
+
+  /* ---------- Resumo ---------- */
+  .total-row{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+  .total-label{font-size:.8rem;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.06em}
+  .total-val{font-family:var(--serif);font-size:2.15rem;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .persons{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+  @media (max-width:520px){.persons{grid-template-columns:1fr}}
+  .pcard{border:1px solid var(--line);border-radius:12px;padding:14px;position:relative;overflow:hidden}
+  .pcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+  .pcard.a::before{background:var(--pa)}
+  .pcard.b::before{background:var(--pb)}
+  .pcard .pname{display:flex;align-items:center;gap:8px;font-weight:600;font-size:.95rem}
+  .dot{width:9px;height:9px;border-radius:50%}
+  .pcard.a .dot{background:var(--pa)}
+  .pcard.b .dot{background:var(--pb)}
+  .pline{display:flex;justify-content:space-between;font-size:.86rem;margin-top:9px;color:var(--ink-soft)}
+  .pline b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+  .settle{margin-top:16px;border-radius:12px;padding:14px 16px;font-size:.96rem;display:flex;gap:10px;align-items:center;background:var(--surface-2);border:1px solid var(--line)}
+  .settle .badge{font-weight:600}
+  .settle.zero{color:var(--ink-soft)}
+
+  /* ---------- Split control ---------- */
+  .split-box{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.85rem;color:var(--ink-soft)}
+  .split-box input[type=range]{flex:1;min-width:130px;accent-color:var(--pa)}
+  .split-vals{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  /* ---------- Form ---------- */
+  form.add{display:grid;grid-template-columns:118px 1fr 150px 130px;gap:12px}
+  @media (max-width:760px){form.add{grid-template-columns:1fr 1fr}}
+  @media (max-width:440px){form.add{grid-template-columns:1fr}}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field.full{grid-column:1/-1}
+  label{font-size:.74rem;font-weight:600;letter-spacing:.03em;color:var(--ink-faint);text-transform:uppercase}
+  input,select{font-family:inherit;font-size:.94rem;color:var(--ink);background:var(--ground);border:1px solid var(--line-strong);border-radius:9px;padding:9px 10px;width:100%}
+  input:focus,select:focus{outline:2px solid var(--pa);outline-offset:1px;border-color:var(--pa)}
+  .who{display:flex;gap:8px}
+  .who label{flex:1;cursor:pointer;text-transform:none;letter-spacing:0;font-weight:500;font-size:.9rem}
+  .who input{position:absolute;opacity:0;pointer-events:none}
+  .who .chip{display:block;text-align:center;padding:9px 6px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--ground);color:var(--ink-soft);transition:.12s}
+  .who label:nth-child(1) input:checked + .chip{border-color:var(--pa);background:var(--pa-soft);color:var(--pa);font-weight:600}
+  .who label:nth-child(2) input:checked + .chip{border-color:var(--pb);background:var(--pb-soft);color:var(--pb);font-weight:600}
+  .btn{font-family:inherit;font-size:.94rem;font-weight:600;border:none;border-radius:9px;padding:10px 16px;cursor:pointer;background:var(--ink);color:var(--ground);line-height:1}
+  .btn:hover{opacity:.9}
+  .btn.ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line-strong)}
+  .btn.ghost:hover{border-color:var(--ink-faint);color:var(--ink)}
+  .form-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px}
+
+  /* ---------- Tabela ---------- */
+  .table-scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+  th{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-faint);font-weight:600;white-space:nowrap}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  .tag-who{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;white-space:nowrap}
+  .tag-who .dot{width:8px;height:8px}
+  .cat{display:inline-block;font-size:.76rem;padding:2px 8px;border-radius:999px;background:var(--surface-2);color:var(--ink-soft);white-space:nowrap}
+  .del{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:1.05rem;line-height:1;padding:4px 6px;border-radius:7px}
+  .del:hover{color:var(--neg);background:var(--surface-2)}
+  .empty{padding:38px 18px;text-align:center;color:var(--ink-faint);font-size:.92rem}
+  tfoot td{font-weight:600;border-top:2px solid var(--line-strong);color:var(--ink)}
+
+  /* ---------- Toolbar ---------- */
+  .tools{display:flex;gap:9px;flex-wrap:wrap}
+  .tiny{font-size:.8rem;padding:7px 11px}
+  .hint{font-size:.78rem;color:var(--ink-faint);margin-top:14px;text-align:center;line-height:1.55}
+  .names-edit{display:flex;gap:8px;align-items:center}
+  .names-edit input{width:120px;padding:6px 8px;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <span class="key" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>
+        </svg>
+      </span>
+      <div>
+        <h1>Custos do Financiamento do Imóvel</h1>
+        <div class="sub">Lançe cada gasto, marque quem pagou e veja quem deve a quem.</div>
+      </div>
+    </div>
+    <button class="theme-btn" id="themeBtn" title="Alternar tema">◐</button>
+  </header>
+
+  <!-- RESUMO -->
+  <section class="card">
+    <div class="card-h">
+      <h2>Resumo</h2>
+      <div class="names-edit">
+        <input id="nameA" aria-label="Nome da pessoa A" maxlength="18">
+        <span style="color:var(--ink-faint)">e</span>
+        <input id="nameB" aria-label="Nome da pessoa B" maxlength="18">
+      </div>
+    </div>
+    <div class="card-b">
+      <div class="total-row">
+        <span class="total-label">Total gasto no imóvel</span>
+        <span class="total-val" id="total">R$ 0,00</span>
+      </div>
+
+      <div class="split-box">
+        <span>Divisão combinada:</span>
+        <span class="split-vals"><b id="splitAlbl" style="color:var(--pa)">50%</b> / <b id="splitBlbl" style="color:var(--pb)">50%</b></span>
+        <input type="range" id="split" min="0" max="100" step="5" value="50" aria-label="Percentual da pessoa A">
+      </div>
+
+      <div class="persons">
+        <div class="pcard a">
+          <div class="pname"><span class="dot"></span><span id="pAname">Pessoa A</span></div>
+          <div class="pline"><span>Pagou</span><b id="paidA">R$ 0,00</b></div>
+          <div class="pline"><span>Parte dela(e)</span><b id="shareA">R$ 0,00</b></div>
+          <div class="pline"><span>Saldo</span><b id="balA">R$ 0,00</b></div>
+        </div>
+        <div class="pcard b">
+          <div class="pname"><span class="dot"></span><span id="pBname">Pessoa B</span></div>
+          <div class="pline"><span>Pagou</span><b id="paidB">R$ 0,00</b></div>
+          <div class="pline"><span>Parte dela(e)</span><b id="shareB">R$ 0,00</b></div>
+          <div class="pline"><span>Saldo</span><b id="balB">R$ 0,00</b></div>
+        </div>
+      </div>
+
+      <div class="settle zero" id="settle">Nenhum gasto lançado ainda. As contas estão zeradas.</div>
+    </div>
+  </section>
+
+  <!-- ADICIONAR -->
+  <section class="card">
+    <div class="card-h"><h2>Adicionar custo</h2></div>
+    <div class="card-b">
+      <form class="add" id="addForm">
+        <div class="field">
+          <label for="fdate">Data</label>
+          <input type="date" id="fdate" required>
+        </div>
+        <div class="field">
+          <label for="fdesc">Descrição</label>
+          <input type="text" id="fdesc" placeholder="Ex.: Parcela de julho" required>
+        </div>
+        <div class="field">
+          <label for="fcat">Categoria</label>
+          <select id="fcat">
+            <option>Parcela / prestação</option>
+            <option>Entrada / sinal</option>
+            <option>ITBI</option>
+            <option>Cartório / registro</option>
+            <option>Avaliação do imóvel</option>
+            <option>Seguro (MIP/DFI)</option>
+            <option>Taxas bancárias</option>
+            <option>Reforma / benfeitoria</option>
+            <option>Condomínio</option>
+            <option>IPTU</option>
+            <option>Outros</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fval">Valor (R$)</label>
+          <input type="text" inputmode="decimal" id="fval" placeholder="0,00" required>
+        </div>
+        <div class="field full">
+          <label>Quem pagou</label>
+          <div class="who" id="whoBox">
+            <label><input type="radio" name="who" value="A" checked><span class="chip" id="whoAlbl">Pessoa A</span></label>
+            <label><input type="radio" name="who" value="B"><span class="chip" id="whoBlbl">Pessoa B</span></label>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn">Adicionar custo</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- LANÇAMENTOS -->
+  <section class="card">
+    <div class="card-h">
+      <h2>Lançamentos</h2>
+      <div class="tools">
+        <button class="btn ghost tiny" id="csvBtn">Exportar planilha (CSV)</button>
+        <button class="btn ghost tiny" id="backupBtn">Baixar backup</button>
+        <button class="btn ghost tiny" id="restoreBtn">Restaurar backup</button>
+        <input type="file" id="restoreFile" accept="application/json" hidden>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>Data</th><th>Descrição</th><th>Categoria</th><th>Quem pagou</th>
+            <th class="num">Valor</th><th aria-label="Ações"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        <tfoot id="tfoot"></tfoot>
+      </table>
+    </div>
+    <div class="empty" id="empty">Nenhum lançamento ainda. Adicione o primeiro custo acima.</div>
+  </section>
+
+  <p class="hint">
+    Seus dados ficam salvos <b>só neste aparelho/navegador</b> — nada é enviado para a internet.<br>
+    Limpar os dados do navegador apaga tudo, então baixe um <b>backup</b> de vez em quando.
+  </p>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var LS_KEY = "custos_imovel_v1";
+  var state = load();
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(LS_KEY);
+      if(raw){ var s = JSON.parse(raw); if(s && Array.isArray(s.items)) return normalize(s); }
+    }catch(e){}
+    return { nameA:"Você", nameB:"Parceiro(a)", split:50, items:[] };
+  }
+  function normalize(s){
+    s.nameA = s.nameA || "Você";
+    s.nameB = s.nameB || "Parceiro(a)";
+    s.split = (typeof s.split === "number") ? s.split : 50;
+    s.items = s.items || [];
+    return s;
+  }
+  function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+
+  // ---------- Helpers ----------
+  function brl(n){
+    return "R$ " + (n||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+  function parseVal(str){
+    if(!str) return NaN;
+    str = String(str).trim().replace(/\s|R\$/g,"");
+    // aceita 1.234,56 e 1234.56 e 1234,56
+    if(str.indexOf(",") > -1){ str = str.replace(/\./g,"").replace(",","."); }
+    var n = parseFloat(str);
+    return n;
+  }
+  function fmtDate(iso){
+    if(!iso) return "";
+    var p = iso.split("-");
+    return p.length===3 ? (p[2]+"/"+p[1]+"/"+p[0]) : iso;
+  }
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+
+  // ---------- DOM ----------
+  var $ = function(id){ return document.getElementById(id); };
+  var nameAEl=$("nameA"), nameBEl=$("nameB");
+  var splitEl=$("split");
+
+  function refreshLabels(){
+    nameAEl.value = state.nameA; nameBEl.value = state.nameB;
+    $("pAname").textContent = state.nameA;
+    $("pBname").textContent = state.nameB;
+    $("whoAlbl").textContent = state.nameA;
+    $("whoBlbl").textContent = state.nameB;
+    splitEl.value = state.split;
+    $("splitAlbl").textContent = state.split + "%";
+    $("splitBlbl").textContent = (100-state.split) + "%";
+  }
+
+  function render(){
+    refreshLabels();
+    var tbody=$("tbody"), tfoot=$("tfoot"), empty=$("empty");
+    var items = state.items.slice().sort(function(a,b){ return (a.date<b.date?-1:a.date>b.date?1:0); });
+    var total=0, paidA=0, paidB=0;
+
+    tbody.innerHTML="";
+    if(items.length===0){ empty.style.display="block"; tfoot.innerHTML=""; }
+    else {
+      empty.style.display="none";
+      var rows="";
+      items.forEach(function(it){
+        total += it.value;
+        if(it.who==="A") paidA += it.value; else paidB += it.value;
+        var nm = it.who==="A"?state.nameA:state.nameB;
+        var col = it.who==="A"?"var(--pa)":"var(--pb)";
+        rows += '<tr>'+
+          '<td>'+fmtDate(it.date)+'</td>'+
+          '<td>'+esc(it.desc)+'</td>'+
+          '<td><span class="cat">'+esc(it.cat)+'</span></td>'+
+          '<td><span class="tag-who"><span class="dot" style="background:'+col+'"></span>'+esc(nm)+'</span></td>'+
+          '<td class="num">'+brl(it.value)+'</td>'+
+          '<td class="num"><button class="del" data-id="'+it.id+'" title="Excluir" aria-label="Excluir">✕</button></td>'+
+        '</tr>';
+      });
+      tbody.innerHTML=rows;
+      tfoot.innerHTML='<tr><td colspan="4">Total ('+items.length+' lançamento'+(items.length>1?"s":"")+')</td><td class="num">'+brl(total)+'</td><td></td></tr>';
+    }
+
+    // ---- Cálculo do acerto ----
+    var shareA = total * state.split/100;
+    var shareB = total - shareA;
+    var balA = paidA - shareA;   // >0 tem a receber
+    var balB = paidB - shareB;
+
+    $("total").textContent = brl(total);
+    $("paidA").textContent = brl(paidA);
+    $("paidB").textContent = brl(paidB);
+    $("shareA").textContent = brl(shareA);
+    $("shareB").textContent = brl(shareB);
+    setBal($("balA"), balA);
+    setBal($("balB"), balB);
+
+    var settle=$("settle");
+    var diff = Math.round(Math.abs(balA)*100)/100;
+    if(total===0){
+      settle.className="settle zero";
+      settle.textContent="Nenhum gasto lançado ainda. As contas estão zeradas.";
+    } else if(diff < 0.01){
+      settle.className="settle zero";
+      settle.innerHTML="✓ Contas equilibradas — ninguém deve nada.";
+    } else {
+      var devedor = balA<0 ? state.nameA : state.nameB;
+      var credor  = balA<0 ? state.nameB : state.nameA;
+      var cor     = balA<0 ? "var(--pb)" : "var(--pa)";
+      settle.className="settle";
+      settle.innerHTML='Para acertar: <span class="badge" style="color:var(--neg)">&nbsp;'+esc(devedor)+
+        '</span>&nbsp;paga&nbsp;<span class="badge" style="color:var(--neg)">'+brl(diff)+'</span>&nbsp;para&nbsp;'+
+        '<span class="badge" style="color:'+cor+'">'+esc(credor)+'</span>.';
+    }
+  }
+
+  function setBal(el, v){
+    var r = Math.round(v*100)/100;
+    if(Math.abs(r)<0.01){ el.textContent="R$ 0,00"; el.style.color="var(--ink)"; return; }
+    if(r>0){ el.textContent="+"+brl(r)+" a receber"; el.style.color="var(--pos)"; }
+    else { el.textContent=brl(r)+" a pagar"; el.style.color="var(--neg)"; }
+  }
+
+  // ---------- Eventos ----------
+  $("addForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var v = parseVal($("fval").value);
+    if(isNaN(v) || v<=0){ $("fval").focus(); return; }
+    var who = document.querySelector('input[name="who"]:checked').value;
+    state.items.push({
+      id: uid(),
+      date: $("fdate").value || new Date().toISOString().slice(0,10),
+      desc: $("fdesc").value.trim() || "(sem descrição)",
+      cat: $("fcat").value,
+      value: Math.round(v*100)/100,
+      who: who
+    });
+    save(); render();
+    $("fdesc").value=""; $("fval").value=""; $("fdesc").focus();
+  });
+
+  $("tbody").addEventListener("click", function(e){
+    var btn = e.target.closest(".del");
+    if(!btn) return;
+    var id = btn.getAttribute("data-id");
+    state.items = state.items.filter(function(it){ return it.id!==id; });
+    save(); render();
+  });
+
+  function commitName(){
+    state.nameA = (nameAEl.value.trim()||"Pessoa A");
+    state.nameB = (nameBEl.value.trim()||"Pessoa B");
+    save(); render();
+  }
+  nameAEl.addEventListener("change", commitName);
+  nameBEl.addEventListener("change", commitName);
+
+  splitEl.addEventListener("input", function(){
+    state.split = parseInt(splitEl.value,10);
+    $("splitAlbl").textContent = state.split+"%";
+    $("splitBlbl").textContent = (100-state.split)+"%";
+  });
+  splitEl.addEventListener("change", function(){ save(); render(); });
+
+  // ---- CSV ----
+  $("csvBtn").addEventListener("click", function(){
+    var head = ["Data","Descricao","Categoria","Quem pagou","Valor"];
+    var lines = [head.join(";")];
+    state.items.slice().sort(function(a,b){return a.date<b.date?-1:1;}).forEach(function(it){
+      var nm = it.who==="A"?state.nameA:state.nameB;
+      lines.push([fmtDate(it.date), csv(it.desc), csv(it.cat), csv(nm),
+        it.value.toFixed(2).replace(".",",")].join(";"));
+    });
+    downloadBlob(lines.join("\r\n"), "custos-imovel.csv", "text/csv;charset=utf-8");
+  });
+  function csv(s){ s=String(s); return /[;"\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
+
+  // ---- Backup / restore ----
+  $("backupBtn").addEventListener("click", function(){
+    downloadBlob(JSON.stringify(state,null,2), "backup-custos-imovel.json", "application/json");
+  });
+  $("restoreBtn").addEventListener("click", function(){ $("restoreFile").click(); });
+  $("restoreFile").addEventListener("change", function(e){
+    var f=e.target.files[0]; if(!f) return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      try{
+        var s=JSON.parse(rd.result);
+        if(!s || !Array.isArray(s.items)) throw 0;
+        if(!confirm("Restaurar este backup vai substituir os dados atuais. Continuar?")) return;
+        state=normalize(s); save(); render();
+      }catch(err){ alert("Arquivo de backup inválido."); }
+    };
+    rd.readAsText(f);
+    e.target.value="";
+  });
+
+  function downloadBlob(txt, name, type){
+    var blob=new Blob([type.indexOf("csv")>-1?"﻿"+txt:txt],{type:type});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url; a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); },100);
+  }
+
+  // ---- Tema ----
+  $("themeBtn").addEventListener("click", function(){
+    var cur=document.documentElement.getAttribute("data-theme");
+    var isDark = cur ? cur==="dark" : matchMedia("(prefers-color-scheme:dark)").matches;
+    document.documentElement.setAttribute("data-theme", isDark?"light":"dark");
+  });
+
+  // ---- Init ----
+  $("fdate").value = new Date().toISOString().slice(0,10);
+  render();
+})();
+</script>
+</body>
+</html>
