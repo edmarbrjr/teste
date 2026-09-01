@@ -21,12 +21,41 @@ endereço oficial da coluna URL.
 
 ## Normas infralegais (RFB)
 
-Baixadas manualmente do sijut2consulta (o portal exige navegador):
+O sijut2consulta também está bloqueado neste ambiente — entregue pelo Drive:
 
 | Arquivo | Norma | Ementa |
 |---|---|---|
 | `in-rfb-2110-2022.md` | IN RFB nº 2.110/2022 | Normas gerais de tributação previdenciária e de arrecadação |
 | `in-rfb-2058-2021.md` | IN RFB nº 2.058/2021 | Processo de consulta (já usada no projeto do agente) |
+
+## Como entregar uma norma pelo Google Drive
+
+O conector do Drive **não** passa pelo proxy de egresso que bloqueia o
+Planalto neste ambiente — então o Drive é hoje a via que funciona.
+
+**O formato importa mais que o conteúdo.** Testado nesta sessão:
+
+| Formato no Drive | Resultado |
+|---|---|
+| **Documentos Google** | ✅ exporta markdown fiel |
+| **`.md` / `.txt` / `.htm`** | ✅ bytes exatos |
+| **`.docx`** | ✅ funciona, com perda de formatação |
+| **`.pdf`** | ❌ **não use** |
+
+O PDF falhou de forma grave: a extração de `Decreto-lei 200-67.pdf` devolveu
+256 mil caracteres de mojibake, com **zero** ocorrências de "Art." — as fontes
+embutidas usam encoding próprio e o texto sai ilegível. Um PDF assim passaria
+despercebido num corpus grande e devolveria dispositivo errado numa citação.
+
+Fluxo:
+
+1. Você joga a norma numa pasta do Drive, em Documentos Google ou `.md`/`.htm`
+   (o `.htm` salvo direto do Planalto serve).
+2. Me diz o nome da pasta.
+3. Eu leio pelo conector, converto com `do_drive.py` e comito em `legislacao/`.
+
+O `do_drive.py` conta as ocorrências de `Art. N` e **falha** se não achar
+nenhuma — é a rede de segurança contra extração corrompida como a do PDF acima.
 
 ## Como consultar
 
