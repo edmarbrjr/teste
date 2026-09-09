@@ -73,6 +73,62 @@ python3 -m venv .venv && .venv/bin/pip install pypdf
 .venv/bin/python legislacao/de_pdf.py arquivo.pdf lei-8212-1991 --ate-artigo 105
 ```
 
+## Como atualizar uma norma
+
+Legislação muda. Um corpus antigo é mais perigoso que corpus nenhum: o texto
+parece autoritativo e ninguém desconfia.
+
+### 1. Ver o que está velho
+
+```bash
+python3 legislacao/status.py
+```
+
+Mostra a data de consolidação e a idade de cada norma, e alerta acima de 180
+dias (`--limite N` muda o limiar).
+
+### 2. Baixar de novo e reconverter
+
+Pegue o texto atualizado na fonte oficial, ponha na mesma pasta do Drive e me
+avise. Eu reconverto **por cima do arquivo existente** — é isso que faz o
+passo 3 funcionar.
+
+### 3. Ler o que mudou
+
+Como o corpus está em git, a atualização produz um diff que mostra
+exatamente qual dispositivo mudou:
+
+```bash
+git diff legislacao/lei-8212-1991.md          # o que mudou agora
+git log --oneline legislacao/lei-8212-1991.md  # histórico da norma
+git diff HEAD~3 -- legislacao/                 # mudanças das últimas 3 atualizações
+```
+
+Isso é melhor do que qualquer ferramenta de RAG entrega: não é "o que a lei
+diz hoje", é **o que mudou e quando**, no nível do artigo. Para quem redige
+solução de consulta e precisa saber a redação vigente à época do fato
+gerador, o `git log` do arquivo é uma linha do tempo da norma.
+
+Sempre atualize o carimbo ao reconverter:
+
+```
+<!-- consolidado-em: 2026-09-09 -->
+```
+
+### Defasagem conhecida em 09/09/2026
+
+O corpus foi montado com PDFs de 06/05/2025 — 491 dias. Duas mudanças já
+identificadas e **ausentes** dos arquivos:
+
+- **LC 224/2025** (26/12/2025): a alíquota do produtor rural pessoa física do
+  art. 25, I da Lei 8.212 passou de 1,2% para **1,32%** a partir de
+  01/04/2026. O corpus ainda diz 1,2%.
+- **IN RFB 2.321/2026** (06/04/2026): alterou a IN RFB 2.110/2022. O corpus
+  tem a redação anterior.
+
+Enquanto não atualizar, trate esses dois pontos com cuidado — e o resto do
+corpus como provável, não certo.
+
 ## Como consultar
 
 ```bash

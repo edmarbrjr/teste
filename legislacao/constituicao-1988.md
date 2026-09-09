@@ -1,6 +1,7 @@
 <!-- corpus local; não substitui o texto oficial -->
 <!-- extraído de cf88.pdf (162 páginas) -->
 <!-- fonte: https://www.planalto.gov.br/ccivil_03/constituicao/constituicaocompilado.htm -->
+<!-- consolidado-em: 2025-05-06 -->
 
 Presidência da República
 Casa Civil
