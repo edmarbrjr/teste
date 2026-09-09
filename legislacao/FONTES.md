@@ -25,37 +25,47 @@ O sijut2consulta também está bloqueado neste ambiente — entregue pelo Drive:
 
 | Arquivo | Norma | Ementa |
 |---|---|---|
-| `in-rfb-2110-2022.md` | IN RFB nº 2.110/2022 | Normas gerais de tributação previdenciária e de arrecadação |
-| `in-rfb-2058-2021.md` | IN RFB nº 2.058/2021 | Processo de consulta (já usada no projeto do agente) |
+| ✅ `in-rfb-2110-2022.md` | IN RFB nº 2.110/2022 | Normas gerais de tributação previdenciária e de arrecadação — 130 p., 282 artigos |
+| ✅ `in-rfb-2058-2021.md` | IN RFB nº 2.058/2021 | Processo de consulta — 10 p., 52 artigos |
 
 ## Como entregar uma norma pelo Google Drive
 
 O conector do Drive **não** passa pelo proxy de egresso que bloqueia o
-Planalto neste ambiente — então o Drive é hoje a via que funciona.
+Planalto e o sijut2consulta neste ambiente — então o Drive é a via que funciona.
 
-**O formato importa mais que o conteúdo.** Testado nesta sessão:
+Fluxo: você joga a norma numa pasta do Drive e me diz o nome dela. Eu leio pelo
+conector, converto e comito em `legislacao/`.
 
-| Formato no Drive | Resultado |
+### PDF funciona — depende do PDF
+
+Existem dois tipos de PDF, e a diferença é invisível a olho nu:
+
+| Tipo | Extração | Exemplo testado |
+|---|---|---|
+| **PDF de texto** (gerado por editor) | ✅ fiel | IN RFB 2.110/2022 — 130 páginas, 282 artigos, 99,9% limpo |
+| **PDF com fonte sem mapa de caracteres** | ❌ ilegível | Decreto-lei 200/67 — 32 páginas, **zero** artigos, saída `/0 /1 /2 /3` |
+
+Normas recentes da RFB, do Planalto e do DOU são do primeiro tipo. Documentos
+antigos digitalizados ou com fonte incorporada mal-formada são do segundo — e
+nem extrator profissional recupera, porque a informação de qual glifo é qual
+letra não está no arquivo.
+
+`de_pdf.py` mede isso e **recusa** o arquivo quando a extração falha (nenhum
+`Art. N`, ou menos de 90% de caracteres plausíveis). Um PDF corrompido nunca
+entra no corpus em silêncio.
+
+Quando um PDF reprovar, as saídas são: salvar a página do Planalto direto em
+`.htm` (`Ctrl+S`), colar num Documento Google, ou pedir o `.docx` na origem.
+
+### Formatos aceitos
+
+| Formato | Situação |
 |---|---|
+| **PDF de texto** | ✅ via `de_pdf.py`, com diagnóstico automático |
 | **Documentos Google** | ✅ exporta markdown fiel |
-| **`.md` / `.txt` / `.htm`** | ✅ bytes exatos |
+| **`.md` / `.txt` / `.htm`** | ✅ bytes exatos, via `do_drive.py` |
 | **`.docx`** | ✅ funciona, com perda de formatação |
-| **`.pdf`** | ❌ **não use** |
-
-O PDF falhou de forma grave: a extração de `Decreto-lei 200-67.pdf` devolveu
-256 mil caracteres de mojibake, com **zero** ocorrências de "Art." — as fontes
-embutidas usam encoding próprio e o texto sai ilegível. Um PDF assim passaria
-despercebido num corpus grande e devolveria dispositivo errado numa citação.
-
-Fluxo:
-
-1. Você joga a norma numa pasta do Drive, em Documentos Google ou `.md`/`.htm`
-   (o `.htm` salvo direto do Planalto serve).
-2. Me diz o nome da pasta.
-3. Eu leio pelo conector, converto com `do_drive.py` e comito em `legislacao/`.
-
-O `do_drive.py` conta as ocorrências de `Art. N` e **falha** se não achar
-nenhuma — é a rede de segurança contra extração corrompida como a do PDF acima.
+| **PDF digitalizado** | ❌ precisa de OCR, não disponível neste ambiente |
 
 ## Como consultar
 
