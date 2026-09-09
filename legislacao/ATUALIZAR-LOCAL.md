@@ -73,9 +73,10 @@ reprova. Nunca abaixe esses números para "fazer passar".
 
 A página do Planalto é HTML. Duas vias, ambas funcionam:
 
-1. **`Ctrl+S` / `Cmd+S`** na página → salva `.htm` → converter com
-   `do_drive.py` (que aceita texto direto, não só base64 do Drive).
-2. **Imprimir para PDF** → converter com `de_pdf.py`.
+1. **`Cmd+S`** na página → salva `.htm` → converter com
+   `do_drive.py --arquivo <caminho.htm>`. O script detecta HTML, remove as
+   tags e decodifica as entidades.
+2. **Imprimir para PDF** → converter com `de_pdf.py <caminho.pdf>`.
 
 Prefira a primeira: o HTML preserva a estrutura e não passa pela extração de
 PDF, que é onde moram as duas patologias descritas em `FONTES.md`.
@@ -83,11 +84,18 @@ PDF, que é onde moram as duas patologias descritas em `FONTES.md`.
 ## Ao final de cada norma
 
 ```bash
-.venv/bin/python legislacao/de_pdf.py <arquivo> <nome> \
+# a partir do .htm salvo do Planalto (preferido, sem stdlib extra)
+python3 legislacao/do_drive.py <nome> --arquivo ~/Downloads/<arquivo>.htm \
+    --fonte "<url>" --ate-artigo <N> --consolidado-em $(date +%F)
+
+# ou a partir de PDF
+.venv/bin/python legislacao/de_pdf.py <arquivo>.pdf <nome> \
     --fonte "<url>" --ate-artigo <N> --consolidado-em $(date +%F)
 
 git diff legislacao/<nome>.md
 ```
+
+A via do `.htm` não precisa do venv nem do pypdf — só stdlib.
 
 Leia o diff antes de commitar. É ele que mostra qual artigo mudou — o motivo
 de o corpus estar em git. Se vier vazio de conteúdo (só o carimbo de data),

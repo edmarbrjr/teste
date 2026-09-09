@@ -19,6 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from _diagnostico import avaliar
+from baixar import limpar as limpar_html
 
 
 def normalizar(txt: str) -> str:
@@ -32,6 +33,9 @@ def normalizar(txt: str) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("nome", help="nome do arquivo sem extensão, ex.: lei-8212-1991")
+    ap.add_argument("--arquivo", type=Path, default=None,
+                    help="lê de um arquivo local (.htm/.html/.txt/.md) em vez do "
+                         "base64 na entrada padrão")
     ap.add_argument("--fonte", default="", help="URL oficial da norma, para o cabeçalho")
     ap.add_argument("--drive-id", default="", help="id do arquivo no Drive, para rastreio")
     ap.add_argument("--consolidado-em", default=date.today().isoformat(),
@@ -41,15 +45,21 @@ def main() -> int:
     ap.add_argument("--forcar", action="store_true", help="grava mesmo reprovando")
     args = ap.parse_args()
 
-    b64 = "".join(sys.stdin.read().split())
-    if not b64:
-        print("[x] nada recebido na entrada padrão", file=sys.stderr)
-        return 1
-    try:
-        bruto = base64.b64decode(b64, validate=True)
-    except (binascii.Error, ValueError) as e:
-        print(f"[x] base64 inválido: {e}", file=sys.stderr)
-        return 1
+    if args.arquivo:
+        if not args.arquivo.is_file():
+            print(f"[x] não encontrei {args.arquivo}", file=sys.stderr)
+            return 1
+        bruto = args.arquivo.read_bytes()
+    else:
+        b64 = "".join(sys.stdin.read().split())
+        if not b64:
+            print("[x] nada recebido na entrada padrão", file=sys.stderr)
+            return 1
+        try:
+            bruto = base64.b64decode(b64, validate=True)
+        except (binascii.Error, ValueError) as e:
+            print(f"[x] base64 inválido: {e}", file=sys.stderr)
+            return 1
 
     for enc in ("utf-8", "latin-1"):
         try:
@@ -60,6 +70,12 @@ def main() -> int:
     else:
         print("[x] não consegui decodificar o texto", file=sys.stderr)
         return 1
+
+    ehtml = (args.arquivo and args.arquivo.suffix.lower() in {".htm", ".html"}) \
+        or re.search(r"<\s*(html|body|p|div)\b", texto[:4000], re.I) is not None
+    if ehtml:
+        texto = limpar_html(texto)
+        print("    entrada reconhecida como HTML — tags removidas")
 
     texto = normalizar(texto)
     if "�" in texto:
