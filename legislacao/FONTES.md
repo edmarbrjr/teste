@@ -115,9 +115,20 @@ Sempre atualize o carimbo ao reconverter:
 <!-- consolidado-em: 2026-09-09 -->
 ```
 
+### Por que não atualizo sozinho
+
+A política de egresso desta organização bloqueia **todas** as fontes
+legislativas — 403 no CONNECT para planalto.gov.br, normas.receita.fazenda.gov.br,
+in.gov.br, lexml, senado, câmara e agregadores. Testado em 09/09/2026. O
+`README.md` do proxy manda reportar, não contornar.
+
+Então a atualização depende de alguém pôr o arquivo no Drive, ou de liberarem
+os domínios na configuração do ambiente de execução remota. Uma vez liberados,
+`baixar.py` refaz o corpus inteiro sozinho.
+
 ### Defasagem conhecida em 09/09/2026
 
-O corpus foi montado com PDFs de 06/05/2025 — 491 dias. Duas mudanças já
+Nove das dez normas vêm de PDFs de 06/05/2025 — 491 dias. Duas mudanças já
 identificadas e **ausentes** dos arquivos:
 
 - **LC 224/2025** (26/12/2025): a alíquota do produtor rural pessoa física do
@@ -126,8 +137,12 @@ identificadas e **ausentes** dos arquivos:
 - **IN RFB 2.321/2026** (06/04/2026): alterou a IN RFB 2.110/2022. O corpus
   tem a redação anterior.
 
-Enquanto não atualizar, trate esses dois pontos com cuidado — e o resto do
-corpus como provável, não certo.
+A IN RFB 2.058/2021 é a exceção: reconvertida de um PDF de 10/06/2026 e
+**conferida contra a versão anterior — sem mudança de texto**. A única
+diferença era o carimbo de impressão. A norma de base do agente está em dia.
+
+Enquanto não atualizar o resto, trate os dois pontos acima com cuidado — e as
+demais normas como prováveis, não certas.
 
 ## Como consultar
 

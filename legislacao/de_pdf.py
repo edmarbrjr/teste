@@ -16,6 +16,7 @@ como lixo — o Decreto-lei 200/67 devolveu 58 mil caracteres sem um único
 para que texto corrompido nunca entre no corpus em silêncio.
 """
 import argparse
+from datetime import date
 import re
 import sys
 import unicodedata
@@ -60,6 +61,8 @@ def main() -> int:
     ap.add_argument("pdf", type=Path)
     ap.add_argument("nome", help="nome de saída sem extensão, ex.: in-rfb-2110-2022")
     ap.add_argument("--fonte", default="", help="URL oficial da norma")
+    ap.add_argument("--consolidado-em", default=date.today().isoformat(),
+                    help="data da consolidação do texto (padrão: hoje)")
     ap.add_argument("--ate-artigo", type=int, default=None,
                     help="número do último artigo da norma, se souber — detecta truncamento")
     ap.add_argument("--forcar", action="store_true", help="grava mesmo reprovando no diagnóstico")
@@ -88,6 +91,7 @@ def main() -> int:
                  f"<!-- extraído de {args.pdf.name} ({n_pag} páginas) -->"]
     if args.fonte:
         cabecalho.append(f"<!-- fonte: {args.fonte} -->")
+    cabecalho.append(f"<!-- consolidado-em: {args.consolidado_em} -->")
 
     saida = Path(__file__).parent / f"{args.nome}.md"
     saida.write_text("\n".join(cabecalho) + "\n\n" + texto, encoding="utf-8")

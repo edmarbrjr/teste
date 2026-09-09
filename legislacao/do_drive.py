@@ -10,6 +10,7 @@ Só stdlib. Normaliza quebras de linha e espaços não separáveis, preserva o
 texto literal do dispositivo (nada de reescrita).
 """
 import argparse
+from datetime import date
 import base64
 import binascii
 import re
@@ -33,6 +34,8 @@ def main() -> int:
     ap.add_argument("nome", help="nome do arquivo sem extensão, ex.: lei-8212-1991")
     ap.add_argument("--fonte", default="", help="URL oficial da norma, para o cabeçalho")
     ap.add_argument("--drive-id", default="", help="id do arquivo no Drive, para rastreio")
+    ap.add_argument("--consolidado-em", default=date.today().isoformat(),
+                    help="data da consolidação do texto (padrão: hoje)")
     ap.add_argument("--ate-artigo", type=int, default=None,
                     help="número do último artigo da norma, se souber — detecta truncamento")
     ap.add_argument("--forcar", action="store_true", help="grava mesmo reprovando")
@@ -73,6 +76,7 @@ def main() -> int:
     cabecalho = ["<!-- corpus local; não substitui o texto oficial -->"]
     if args.fonte:
         cabecalho.append(f"<!-- fonte: {args.fonte} -->")
+    cabecalho.append(f"<!-- consolidado-em: {args.consolidado_em} -->")
     if args.drive_id:
         cabecalho.append(f"<!-- drive: {args.drive_id} -->")
 
