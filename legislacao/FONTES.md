@@ -1,81 +1,87 @@
 # Corpus de legislação previdenciária
 
-Fonte da verdade local para consulta por `grep`/`rg`. Cada norma é baixada da
-origem oficial e convertida para markdown por `baixar.py`.
+Fonte da verdade local para consulta por `grep`/`rg`. Não substitui o texto
+oficial: para citação em documento, confira sempre a URL da coluna Fonte.
 
-Os arquivos `.md` NÃO são versionados como texto de referência jurídica
-autêntica — para citação em documento oficial, confira sempre o texto no
-endereço oficial da coluna URL.
+## No corpus
 
-## Núcleo previdenciário
-
-| Arquivo | Norma | Ementa | URL oficial |
+| Arquivo | Norma | Extensão | Fonte |
 |---|---|---|---|
-| `lei-8212-1991.md` | Lei nº 8.212/1991 | Custeio da Seguridade Social (Lei Orgânica) | https://www.planalto.gov.br/ccivil_03/leis/l8212cons.htm |
-| `lei-8213-1991.md` | Lei nº 8.213/1991 | Planos de Benefícios da Previdência Social | https://www.planalto.gov.br/ccivil_03/leis/l8213cons.htm |
-| `decreto-3048-1999.md` | Decreto nº 3.048/1999 | Regulamento da Previdência Social (RPS) | https://www.planalto.gov.br/ccivil_03/decreto/d3048.htm |
-| `lei-9876-1999.md` | Lei nº 9.876/1999 | Contribuição do contribuinte individual, fator previdenciário | https://www.planalto.gov.br/ccivil_03/leis/l9876.htm |
-| `lei-10666-2003.md` | Lei nº 10.666/2003 | Aposentadoria especial, retenção, RAT/FAP | https://www.planalto.gov.br/ccivil_03/leis/2003/l10.666.htm |
-| `lei-12546-2011.md` | Lei nº 12.546/2011 | CPRB — desoneração da folha | https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2011/lei/l12546.htm |
-| `ec-103-2019.md` | EC nº 103/2019 | Reforma da Previdência | https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc103.htm |
+| `constituicao-1988.md` | CF/1988 | 162 p., 250 artigos | [Planalto](https://www.planalto.gov.br/ccivil_03/constituicao/constituicaocompilado.htm) |
+| `lei-8212-1991.md` | Lei 8.212/1991 — custeio | 37 p., 105 artigos | [Planalto](https://www.planalto.gov.br/ccivil_03/leis/l8212cons.htm) |
+| `lei-8213-1991.md` | Lei 8.213/1991 — benefícios | 42 p., 154 artigos | [Planalto](https://www.planalto.gov.br/ccivil_03/leis/l8213cons.htm) |
+| `lei-10666-2003.md` | Lei 10.666/2003 | 3 p., 15 artigos | [Planalto](https://www.planalto.gov.br/ccivil_03/leis/2003/l10.666.htm) |
+| `lei-10522-2002.md` | Lei 10.522/2002 — art. 19, jurisprudência vinculante | 20 p., 70 artigos | [Planalto](https://www.planalto.gov.br/ccivil_03/leis/2002/l10522.htm) |
+| `lei-12546-2011.md` | Lei 12.546/2011 — CPRB | 18 p., 68 artigos | [Planalto](https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2011/lei/l12546.htm) |
+| `lei-5172-1966-ctn.md` | CTN | 31 p., 204 artigos | [Planalto](https://www.planalto.gov.br/ccivil_03/leis/l5172compilado.htm) |
+| `lcp-150-2015.md` | LC 150/2015 — doméstico | 12 p., 63 artigos | [Planalto](https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp150.htm) |
+| `in-rfb-2110-2022.md` | IN RFB 2.110/2022 — tributação previdenciária | 130 p., 277 artigos | [sijut2consulta](http://normas.receita.fazenda.gov.br/sijut2consulta/link.action?idAto=127178) |
+| `in-rfb-2058-2021.md` | IN RFB 2.058/2021 — processo de consulta | 10 p., 52 artigos | [sijut2consulta](http://normas.receita.fazenda.gov.br/sijut2consulta/link.action?idAto=121555) |
 
-## Normas infralegais (RFB)
+Todos convertidos da pasta do Drive do usuário (consolidados em 06.05.2025) e
+aprovados no diagnóstico de `_diagnostico.py`.
 
-O sijut2consulta também está bloqueado neste ambiente — entregue pelo Drive:
+## Falta
 
-| Arquivo | Norma | Ementa |
-|---|---|---|
-| ✅ `in-rfb-2110-2022.md` | IN RFB nº 2.110/2022 | Normas gerais de tributação previdenciária e de arrecadação — 130 p., 282 artigos |
-| ✅ `in-rfb-2058-2021.md` | IN RFB nº 2.058/2021 | Processo de consulta — 10 p., 52 artigos |
+**Decreto 3.048/1999 (RPS)** — o PDF do Drive tem 7 MB e o conector encerra a
+sessão nesse tamanho (cinco tentativas). O caminho alternativo do conector
+entrega o texto **truncado no art. 188** de 372, sem o art. 216 (arrecadação),
+e por isso foi recusado. Saídas: salvar a página do Planalto em `.htm`
+(`Ctrl+S`, alguns MB menor), dividir o PDF em duas metades, ou colar num
+Documento Google.
 
-## Como entregar uma norma pelo Google Drive
+## As duas patologias que o diagnóstico pega
 
-O conector do Drive **não** passa pelo proxy de egresso que bloqueia o
-Planalto e o sijut2consulta neste ambiente — então o Drive é a via que funciona.
+Ambas silenciosas — o texto entregue parece perfeito:
 
-Fluxo: você joga a norma numa pasta do Drive e me diz o nome dela. Eu leio pelo
-conector, converto e comito em `legislacao/`.
+1. **Extração corrompida.** PDF com fonte sem mapa de caracteres: sai `/0 /1 /2`
+   e nenhum "Art." é encontrado. Caso real: `Decreto-lei 200-67.pdf`, 32
+   páginas, zero artigos. Nem extrator profissional recupera — a informação de
+   qual glifo é qual letra não está no arquivo.
+2. **Extração truncada.** O leitor devolve só o começo. Pior que a primeira,
+   porque o trecho entregue está impecável e nada denuncia a falta. Casos
+   reais: o Decreto 3.048 parou no art. 188; a Constituição, lida pelo mesmo
+   caminho, parou no art. 156 — sem os arts. 195 e 201.
 
-### PDF funciona — depende do PDF
+`_diagnostico.py` mede a proporção de caracteres plausíveis (pega a primeira)
+e procura buracos na numeração dos artigos (pega a segunda), distinguindo
+truncamento de revogação: a Lei 8.213 não tem os arts. 145-146 e o CTN não tem
+os arts. 52-61 porque foram revogados, e ambos passam.
 
-Existem dois tipos de PDF, e a diferença é invisível a olho nu:
+Quando souber o último artigo da norma, passe `--ate-artigo N` — é a
+verificação mais direta contra truncamento.
 
-| Tipo | Extração | Exemplo testado |
-|---|---|---|
-| **PDF de texto** (gerado por editor) | ✅ fiel | IN RFB 2.110/2022 — 130 páginas, 282 artigos, 99,9% limpo |
-| **PDF com fonte sem mapa de caracteres** | ❌ ilegível | Decreto-lei 200/67 — 32 páginas, **zero** artigos, saída `/0 /1 /2 /3` |
+## Como alimentar o corpus
 
-Normas recentes da RFB, do Planalto e do DOU são do primeiro tipo. Documentos
-antigos digitalizados ou com fonte incorporada mal-formada são do segundo — e
-nem extrator profissional recupera, porque a informação de qual glifo é qual
-letra não está no arquivo.
-
-`de_pdf.py` mede isso e **recusa** o arquivo quando a extração falha (nenhum
-`Art. N`, ou menos de 90% de caracteres plausíveis). Um PDF corrompido nunca
-entra no corpus em silêncio.
-
-Quando um PDF reprovar, as saídas são: salvar a página do Planalto direto em
-`.htm` (`Ctrl+S`), colar num Documento Google, ou pedir o `.docx` na origem.
-
-### Formatos aceitos
+Ponha a norma numa pasta do Drive e me diga qual. Eu leio pelo conector e
+converto. Formatos:
 
 | Formato | Situação |
 |---|---|
-| **PDF de texto** | ✅ via `de_pdf.py`, com diagnóstico automático |
-| **Documentos Google** | ✅ exporta markdown fiel |
-| **`.md` / `.txt` / `.htm`** | ✅ bytes exatos, via `do_drive.py` |
-| **`.docx`** | ✅ funciona, com perda de formatação |
-| **PDF digitalizado** | ❌ precisa de OCR, não disponível neste ambiente |
+| PDF de texto (até ~5 MB) | ✅ `de_pdf.py`, extração local com pypdf |
+| Documentos Google | ✅ exporta markdown fiel |
+| `.md` / `.txt` / `.htm` | ✅ bytes exatos, via `do_drive.py` |
+| `.docx` | ✅ com perda de formatação |
+| PDF acima de ~7 MB | ❌ o conector encerra a sessão |
+| PDF digitalizado | ❌ precisa de OCR, indisponível aqui |
+
+`de_pdf.py` exige pypdf. O pacote `cryptography` do sistema está quebrado
+neste ambiente, então use um venv:
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install pypdf
+.venv/bin/python legislacao/de_pdf.py arquivo.pdf lei-8212-1991 --ate-artigo 105
+```
 
 ## Como consultar
 
 ```bash
 # texto literal de um dispositivo
-rg -n "^\s*Art\. 22" legislacao/lei-8212-1991.md -A 40
+sed -n '/^Art\. 22\./,/^Art\. 23\./p' legislacao/lei-8212-1991.md
 
 # onde uma expressão aparece em todo o corpus
 rg -n -i "salário de contribuição" legislacao/
 
-# só as ementas/títulos
-rg -n "^#{1,3} " legislacao/lei-8212-1991.md
+# um artigo e o que vem logo depois
+rg -n "^Art\. 195\." legislacao/constituicao-1988.md -A 12
 ```

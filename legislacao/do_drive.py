@@ -16,6 +16,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
+from _diagnostico import avaliar
+
 
 def normalizar(txt: str) -> str:
     txt = txt.replace("\r\n", "\n").replace("\r", "\n")
@@ -30,6 +33,9 @@ def main() -> int:
     ap.add_argument("nome", help="nome do arquivo sem extensão, ex.: lei-8212-1991")
     ap.add_argument("--fonte", default="", help="URL oficial da norma, para o cabeçalho")
     ap.add_argument("--drive-id", default="", help="id do arquivo no Drive, para rastreio")
+    ap.add_argument("--ate-artigo", type=int, default=None,
+                    help="número do último artigo da norma, se souber — detecta truncamento")
+    ap.add_argument("--forcar", action="store_true", help="grava mesmo reprovando")
     args = ap.parse_args()
 
     b64 = "".join(sys.stdin.read().split())
@@ -56,6 +62,14 @@ def main() -> int:
     if "�" in texto:
         print("[!] aviso: há caracteres de substituição — confira o encoding", file=sys.stderr)
 
+    aprovado, msgs = avaliar(texto, args.ate_artigo)
+    for m in msgs:
+        print(f"    {m}")
+    if not aprovado and not args.forcar:
+        print("[x] reprovado no diagnóstico — não vou gravar texto incompleto "
+              "ou corrompido.", file=sys.stderr)
+        return 1
+
     cabecalho = ["<!-- corpus local; não substitui o texto oficial -->"]
     if args.fonte:
         cabecalho.append(f"<!-- fonte: {args.fonte} -->")
@@ -65,11 +79,7 @@ def main() -> int:
     arq = Path(__file__).parent / f"{args.nome}.md"
     arq.write_text("\n".join(cabecalho) + "\n\n" + texto, encoding="utf-8")
 
-    arts = len(re.findall(r"\bArt\.\s*\d+", texto))
-    print(f"[ok] {arq.name} — {len(texto):,} chars, {arts} ocorrências de 'Art. N'")
-    if arts == 0:
-        print("[!] nenhum 'Art. N' encontrado — provável extração ruim (PDF?)", file=sys.stderr)
-        return 1
+    print(f"[ok] {arq.name} — {len(texto):,} chars")
     return 0
 
 

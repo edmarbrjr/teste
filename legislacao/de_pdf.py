@@ -21,6 +21,10 @@ import sys
 import unicodedata
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
+
+from _diagnostico import avaliar
+
 try:
     import pypdf
 except ImportError:
@@ -51,20 +55,13 @@ def limpar(txt: str) -> str:
     return txt.strip() + "\n"
 
 
-def diagnosticar(txt: str) -> tuple[int, float]:
-    """Retorna (nº de 'Art. N', proporção de caracteres plausíveis)."""
-    artigos = len(re.findall(r"\bArt\. ?\d+", txt))
-    if not txt:
-        return artigos, 0.0
-    bons = sum(1 for c in txt if c.isalnum() or c.isspace() or c in ".,;:()§ºª-/\"'")
-    return artigos, bons / len(txt)
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("pdf", type=Path)
     ap.add_argument("nome", help="nome de saída sem extensão, ex.: in-rfb-2110-2022")
     ap.add_argument("--fonte", default="", help="URL oficial da norma")
+    ap.add_argument("--ate-artigo", type=int, default=None,
+                    help="número do último artigo da norma, se souber — detecta truncamento")
     ap.add_argument("--forcar", action="store_true", help="grava mesmo reprovando no diagnóstico")
     args = ap.parse_args()
 
@@ -74,16 +71,16 @@ def main() -> int:
 
     bruto, n_pag = extrair(args.pdf)
     texto = limpar(bruto)
-    artigos, proporcao = diagnosticar(texto)
+    aprovado, msgs = avaliar(texto, args.ate_artigo)
 
-    print(f"    {n_pag} páginas, {len(texto):,} chars, {artigos} artigos, "
-          f"{proporcao:.1%} de caracteres plausíveis")
+    print(f"    {n_pag} páginas, {len(texto):,} chars")
+    for m in msgs:
+        print(f"    {m}")
 
-    reprovado = artigos == 0 or proporcao < 0.90
-    if reprovado and not args.forcar:
-        print("[x] extração reprovada — PDF provavelmente sem mapa de caracteres.\n"
-              "    Consiga o texto por outra via (página do Planalto salva em .htm,\n"
-              "    Documento Google) ou repita com --forcar se souber o que está fazendo.",
+    if not aprovado and not args.forcar:
+        print("[x] extração reprovada — não vou gravar texto incompleto ou corrompido.\n"
+              "    Consiga por outra via (página do Planalto salva em .htm, Documento\n"
+              "    Google, PDF dividido) ou repita com --forcar se souber o que faz.",
               file=sys.stderr)
         return 1
 
